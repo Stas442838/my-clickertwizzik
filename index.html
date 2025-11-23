@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin Premium Fixed</title>
+    <title>Mandarin v18 Instant</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* --- ПРЕМИУМ СТИЛИ --- */
         :root {
             --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             --glass: rgba(255, 255, 255, 0.08);
@@ -17,7 +16,6 @@
             --text: #ffffff;
             --accent: #ff9f43;
             --gold: linear-gradient(to bottom, #f1c40f, #f39c12);
-            --neon-glow: 0 0 20px rgba(255, 159, 67, 0.6);
         }
 
         body {
@@ -29,160 +27,132 @@
             overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
-        /* ЭКРАН ЗАГРУЗКИ */
-        #loading-screen {
-            position: fixed; top:0; left:0; width:100%; height:100%;
+        /* --- ЭКРАН ЗАГРУЗКИ --- */
+        #loader-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #0f0c29; z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.5s ease;
         }
-        .loader {
-            width: 50px; height: 50px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top: 3px solid var(--accent);
+        .spinner {
+            width: 40px; height: 40px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top: 4px solid var(--accent);
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            box-shadow: var(--neon-glow);
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
 
-        /* ИНТЕРФЕЙС */
+        /* --- ИНТЕРФЕЙС --- */
         .header {
-            text-align: center; padding: 20px;
-            background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(15px);
-            border-bottom: 1px solid var(--glass-border); z-index: 10;
+            text-align: center; padding: 15px;
+            background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
         }
-        .score-label { font-size: 12px; opacity: 0.6; letter-spacing: 1px; text-transform: uppercase; }
-        .score-value {
-            font-size: 42px; font-weight: 900;
+        .score-val {
+            font-size: 40px; font-weight: 900;
             background: var(--gold); -webkit-background-clip: text; color: transparent;
             text-shadow: 0 5px 15px rgba(243, 156, 18, 0.3); margin: 5px 0;
         }
-        .brand-pill {
-            background: rgba(255, 159, 67, 0.2); color: var(--accent);
-            padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: bold;
-            display: inline-block; margin-top: 5px;
+        .status-pill {
+            font-size: 10px; background: rgba(255,255,255,0.1); padding: 3px 8px;
+            border-radius: 10px; color: #aaa;
         }
 
-        .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 110px; display: none; }
-        .content.active { display: flex; flex-direction: column; animation: fadeUp 0.3s ease; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: none; }
+        .content.active { display: flex; flex-direction: column; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from {opacity:0; transform: translateY(10px);} to {opacity:1; transform: translateY(0);} }
 
-        .mandarin-container { position: relative; display: flex; justify-content: center; align-items: center; height: 100%; flex-direction: column; }
-        .big-button {
-            width: 260px; height: 260px;
-            background: radial-gradient(circle at 35% 35%, #ffb347, #ff8008);
-            border-radius: 50%; border: 4px solid rgba(255,255,255,0.1);
-            box-shadow: inset 0 0 20px rgba(255,255,255,0.3), 0 10px 40px rgba(255, 128, 8, 0.4);
+        .big-btn {
+            width: 250px; height: 250px;
+            background: radial-gradient(circle at 30% 30%, #ffb347, #ff8008);
+            border-radius: 50%; border: 5px solid rgba(255,255,255,0.1);
+            box-shadow: 0 0 40px rgba(255, 140, 0, 0.4);
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: transform 0.08s; position: relative;
+            margin: 20px auto; cursor: pointer; position: relative;
+            transition: transform 0.05s;
         }
-        .big-button:active { transform: scale(0.92); }
-        .big-button span { font-size: 140px; pointer-events: none; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)); }
-        
+        .big-btn:active { transform: scale(0.95); }
+        .big-btn span { font-size: 130px; pointer-events: none; }
+
         .card {
-            background: var(--glass); backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border); border-radius: 18px;
-            padding: 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 16px; padding: 12px; margin-bottom: 10px;
+            display: flex; align-items: center; justify-content: space-between;
         }
-        .price-btn { background: var(--accent); color: #1e1e1e; border: none; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 13px; }
-        .price-btn:disabled { background: #444; color: #777; }
+        .btn-buy {
+            background: var(--accent); color: #000; border: none;
+            padding: 8px 14px; border-radius: 8px; font-weight: 800; font-size: 12px;
+        }
+        .btn-buy:disabled { background: #444; color: #888; }
 
-        .rank-badge { width: 32px; height: 32px; border-radius: 10px; background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; font-size: 14px; }
-        .rank-1 { background: linear-gradient(45deg, #FFD700, #FDB931); color: #000; }
-        .rank-2 { background: linear-gradient(45deg, #E0E0E0, #BDBDBD); color: #000; }
-        .rank-3 { background: linear-gradient(45deg, #CD7F32, #A0522D); color: #000; }
-
-        .promo-box { background: var(--glass); padding: 25px; border-radius: 20px; text-align: center; border: 1px solid var(--glass-border); margin-top: 40px; }
-        .promo-input { width: 100%; padding: 15px; border-radius: 12px; border: none; background: rgba(0,0,0,0.3); color: white; font-size: 18px; text-align: center; margin-bottom: 15px; box-sizing: border-box; }
-        .action-btn { width: 100%; padding: 15px; background: linear-gradient(to right, #ff9f43, #ff6b6b); border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 16px; }
-
-        .dock-nav {
+        .nav {
             position: fixed; bottom: 20px; left: 20px; right: 20px;
-            background: rgba(20, 20, 30, 0.85); backdrop-filter: blur(20px);
-            border-radius: 24px; display: flex; justify-content: space-around;
-            padding: 12px 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.05); z-index: 100;
+            background: rgba(20, 20, 30, 0.9); backdrop-filter: blur(20px);
+            border-radius: 20px; display: flex; justify-content: space-around;
+            padding: 10px 0; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        .dock-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; flex: 1; transition: 0.3s; }
-        .dock-item.active { color: var(--accent); transform: translateY(-5px); }
-        .dock-icon { font-size: 24px; margin-bottom: 3px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #777; font-size: 9px; transition: 0.3s; }
+        .nav-item.active { color: var(--accent); transform: translateY(-3px); }
+        .nav-icon { font-size: 22px; margin-bottom: 2px; }
 
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(22px); }
+        .promo-input { width: 80%; padding: 12px; border-radius: 10px; border: none; background: #333; color: white; text-align: center; margin: 0 auto 10px; display: block; }
+        .promo-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <div id="loading-screen">
-        <div class="loader"></div>
-        <div style="margin-top: 15px; font-weight: 600; opacity: 0.7;">CONNECTING...</div>
-        <div id="debug-msg" style="margin-top:10px; color: red; font-size: 10px;"></div>
+    <div id="loader-overlay">
+        <div class="spinner"></div>
     </div>
 
     <div class="header">
-        <div class="score-label">ВАШ БАЛАНС</div>
-        <div class="score-value" id="score">0</div>
-        <div class="brand-pill" id="brand-label">PREMIUM V 17.0</div>
+        <div style="font-size: 10px; opacity: 0.5;">БАЛАНС</div>
+        <div class="score-val" id="score">0</div>
+        <div class="status-pill" id="status-text">OFFLINE</div>
     </div>
 
     <div id="tab-game" class="content active">
-        <div class="mandarin-container">
-            <div class="big-button" id="clickBtn" onclick="doClick()"><span>🍊</span></div>
-            <div style="text-align: center; margin-top: 30px; font-size: 14px; opacity: 0.8;">
-                Сила клика: <span style="color: var(--accent); font-weight: bold;">+<span id="power">1</span></span>
-            </div>
-        </div>
+        <div class="big-btn" id="clickBtn" onclick="doClick()"><span>🍊</span></div>
+        <div style="text-align:center; margin-top:20px; font-size:14px;">Сила: <b id="power" style="color:var(--accent)">1</b></div>
     </div>
 
     <div id="tab-shop" class="content">
-        <h2 style="padding-left: 10px; margin-bottom: 15px;">🛍 Магазин</h2>
+        <h2>Магазин</h2>
         <div id="shop-container"></div>
     </div>
 
     <div id="tab-leaders" class="content">
-        <h2 style="padding-left: 10px; margin-bottom: 5px;">🏆 Рейтинг</h2>
-        <div style="padding-left: 10px; font-size: 12px; opacity: 0.5; margin-bottom: 15px;">Топ игроков</div>
+        <h2>Топ Игроков</h2>
         <div id="leaders-list">Загрузка...</div>
     </div>
 
     <div id="tab-promo" class="content">
-        <div class="promo-box">
-            <h2 style="margin: 0 0 15px 0;">Секретный код</h2>
-            <input type="text" id="promoInput" class="promo-input" placeholder="Введи промокод...">
-            <button class="action-btn" onclick="activatePromo()">АКТИВИРОВАТЬ</button>
-            <div id="promo-msg" style="margin-top: 15px; font-weight: bold;"></div>
+        <div style="text-align:center; margin-top:50px;">
+            <h2>Секретный код</h2>
+            <input type="text" id="promoInput" class="promo-input" placeholder="Введи код...">
+            <button class="promo-btn" onclick="activatePromo()">ПРИМЕНИТЬ</button>
+            <div id="promo-msg" style="margin-top:15px; font-weight:bold;"></div>
         </div>
     </div>
 
-    <div id="tab-settings" class="content">
-        <h2 style="padding-left: 10px; margin-bottom: 15px;">⚙️ Настройки</h2>
-        <div class="card">
-            <div><b>Вибрация</b><br><small>Haptic Feedback</small></div>
-            <label class="switch"><input type="checkbox" id="vibrationToggle" checked onchange="toggleVibration()"><span class="slider"></span></label>
-        </div>
-        <div class="card" onclick="resetProgress()" style="cursor: pointer; border: 1px solid rgba(255, 59, 48, 0.3);">
-            <div style="color: #ff3b30; font-weight: bold;">🗑 Удалить прогресс</div>
-            <div style="opacity: 0.5;">></div>
-        </div>
-        <div style="text-align:center; margin-top:30px; opacity:0.2; font-size:10px; letter-spacing:1px;" onclick="easterEgg()">DESIGNED BY TWIZZIK</div>
-    </div>
-
-    <div class="dock-nav">
-        <div class="dock-item active" onclick="switchTab('game', this)"><span class="dock-icon">🍊</span><span>Game</span></div>
-        <div class="dock-item" onclick="switchTab('shop', this)"><span class="dock-icon">🛍</span><span>Shop</span></div>
-        <div class="dock-item" onclick="switchTab('leaders', this)"><span class="dock-icon">🏆</span><span>Top</span></div>
-        <div class="dock-item" onclick="switchTab('promo', this)"><span class="dock-icon">🎁</span><span>Code</span></div>
-        <div class="dock-item" onclick="switchTab('settings', this)"><span class="dock-icon">⚙️</span><span>Set</span></div>
+    <div class="nav">
+        <div class="nav-item active" onclick="tab('game', this)"><span class="nav-icon">🍊</span>Клик</div>
+        <div class="nav-item" onclick="tab('shop', this)"><span class="nav-icon">🛍</span>Шоп</div>
+        <div class="nav-item" onclick="tab('leaders', this)"><span class="nav-icon">🏆</span>Топ</div>
+        <div class="nav-item" onclick="tab('promo', this)"><span class="nav-icon">🎁</span>Код</div>
     </div>
 
     <script>
-        // ПЕРЕХВАТ ОШИБОК
-        window.onerror = function(msg) { document.getElementById('debug-msg').innerText = msg; setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 2000); };
+        // === ГАРАНТИРОВАННЫЙ ЗАПУСК ЧЕРЕЗ 1.5 СЕК ===
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById('loader-overlay').style.opacity = '0';
+                setTimeout(() => document.getElementById('loader-overlay').style.display = 'none', 500);
+            }, 1500);
+        };
 
+        // НАСТРОЙКИ
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -193,106 +163,94 @@
             appId: ""
         };
 
-        try { firebase.initializeApp(firebaseConfig); } catch(e) { console.log(e); }
-        const db = firebase.database();
+        let db = null;
+        try { 
+            firebase.initializeApp(firebaseConfig); 
+            db = firebase.database();
+        } catch(e) { console.log("Firebase Error", e); }
+
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.setHeaderColor('#0f0c29');
 
-        let score = 0, clickPower = 1;
-        let isVibrationEnabled = true;
+        let score = 0;
+        let power = 1;
         let promoTwizzik = false, promoKoronka = false, promoVitya = false;
-        let easterCount = 0;
-        
         let userId = "guest_" + Math.floor(Math.random()*10000);
         let userName = "Guest";
+
         if (tg.initDataUnsafe?.user) {
             userId = tg.initDataUnsafe.user.id.toString();
             userName = tg.initDataUnsafe.user.first_name;
         }
 
         const upgrades = [
-            { name: "Палец", p: 1, c: 100 }, { name: "Кастет", p: 5, c: 500 }, { name: "Мышка", p: 15, c: 1500 },
-            { name: "Клавиатура", p: 40, c: 3500 }, { name: "Макросы", p: 80, c: 6000 }, { name: "Друг", p: 150, c: 10000 },
-            { name: "Семья", p: 300, c: 25000 }, { name: "Офис", p: 600, c: 50000 }, { name: "Скрипт", p: 1200, c: 120000 },
-            { name: "Хакер", p: 2500, c: 300000 }, { name: "Видеокарта", p: 5000, c: 700000 }, { name: "Процессор", p: 10000, c: 1500000 },
-            { name: "Сервер", p: 25000, c: 4000000 }, { name: "Ботнет", p: 60000, c: 10000000 }, { name: "Майнинг", p: 150000, c: 25000000 },
-            { name: "Крипта", p: 350000, c: 60000000 }, { name: "Нейросеть", p: 800000, c: 150000000 }, { name: "Дата-центр", p: 2000000, c: 400000000 },
-            { name: "ИИ", p: 5000000, c: 1000000000 }, { name: "Стартап", p: 12000000, c: 3000000000 }, { name: "Корпорация", p: 30000000, c: 8000000000 },
-            { name: "Спутник", p: 75000000, c: 20000000000 }, { name: "Ракета", p: 200000000, c: 60000000000 }, { name: "SpaceX", p: 500000000, c: 150000000000 },
-            { name: "Луна", p: 1200000000, c: 400000000000 }, { name: "Марс", p: 3000000000, c: 1000000000000 }, { name: "Колония", p: 8000000000, c: 3000000000000 },
-            { name: "Планета", p: 20000000000, c: 8000000000000 }, { name: "Звезда", p: 50000000000, c: 25000000000000 }, { name: "Солнце", p: 120000000000, c: 70000000000000 },
-            { name: "Черная Дыра", p: 300000000000, c: 200000000000000 }, { name: "Сверхновая", p: 800000000000, c: 600000000000000 }, { name: "Туманность", p: 2000000000000, c: 2000000000000000 },
-            { name: "Галактика", p: 5000000000000, c: 6000000000000000 }, { name: "Млечный Путь", p: 12000000000000, c: 20000000000000000 }, { name: "Квазар", p: 30000000000000, c: 80000000000000000 },
-            { name: "Вселенная", p: 80000000000000, c: 250000000000000000 }, { name: "Мультивселенная", p: 200000000000000, c: 750000000000000000 }, { name: "Параллель", p: 500000000000000, c: 2500000000000000000 },
-            { name: "Измерение X", p: 1200000000000000, c: 8000000000000000000 }, { name: "Квант. Поле", p: 3000000000000000, c: 25000000000000000000 }, { name: "Время", p: 8000000000000000, c: 80000000000000000000 },
-            { name: "Материя", p: 20000000000000000, c: 250000000000000000000 }, { name: "Антиматерия", p: 50000000000000000, c: 800000000000000000000 }, { name: "Пустота", p: 120000000000000000, c: 3000000000000000000000 },
-            { name: "Матрица", p: 300000000000000000, c: 10000000000000000000000 }, { name: "Перчатка Таноса", p: 800000000000000000, c: 35000000000000000000000 }, { name: "Реальность", p: 2000000000000000000, c: 100000000000000000000000 },
-            { name: "Создатель", p: 5000000000000000000, c: 400000000000000000000000 }, { name: "Сила Twizzik", p: 9999999999999999999, c: 999999999999999999999999 }
+            { name: "Палец", p: 1, c: 100 }, { name: "Мышка", p: 15, c: 1500 },
+            { name: "Клава", p: 40, c: 3500 }, { name: "Друг", p: 100, c: 7500 },
+            { name: "Хакер", p: 2500, c: 300000 }, { name: "Видеокарта", p: 5000, c: 700000 },
+            { name: "Ферма", p: 40000, c: 5000000 }, { name: "SpaceX", p: 500000, c: 200000000 },
+            { name: "Сила Twizzik", p: 999999999, c: 99999999999 }
         ];
 
-        // ГЛАВНАЯ ФУНКЦИЯ (С ТАЙМЕРОМ СПАСЕНИЯ)
-        function init() {
-            // Если через 3.5 секунды игра не загрузилась - убираем заставку принудительно
-            setTimeout(() => {
-                const l = document.getElementById('loading-screen');
-                if(l.style.display !== 'none') {
-                    l.style.opacity = '0';
-                    setTimeout(() => l.style.display = 'none', 500);
-                }
-            }, 3500);
+        // --- ЛОГИКА ---
+        function start() {
+            // 1. Сначала грузим локально (мгновенно)
+            if(localStorage.getItem('score')) {
+                score = parseFloat(localStorage.getItem('score'));
+                power = parseFloat(localStorage.getItem('power'));
+                promoTwizzik = localStorage.getItem('pt') === 'true';
+                promoKoronka = localStorage.getItem('pk') === 'true';
+                promoVitya = localStorage.getItem('pv') === 'true';
+            }
+            updateUI();
 
-            db.ref('players/' + userId).once('value').then(snap => {
-                const d = snap.val();
-                if(d) {
-                    score = parseFloat(d.score) || 0;
-                    clickPower = parseFloat(d.power) || 1;
-                    promoTwizzik = d.promoTwizzik || false;
-                    promoKoronka = d.promoKoronka || false;
-                    promoVitya = d.promoVitya || false;
-                    if(promoTwizzik) enableGodMode();
-                } else {
-                    if(localStorage.getItem('score')) {
-                        score = parseFloat(localStorage.getItem('score'));
-                        clickPower = parseFloat(localStorage.getItem('power'));
-                        promoTwizzik = localStorage.getItem('promoTwizzik') === 'true';
-                        promoKoronka = localStorage.getItem('promoKoronka') === 'true';
-                        promoVitya = localStorage.getItem('promoVitya') === 'true';
-                        if(promoTwizzik) enableGodMode();
+            // 2. Потом пробуем подгрузить с сервера
+            if(db) {
+                db.ref('players/' + userId).once('value').then(snap => {
+                    const d = snap.val();
+                    if(d) {
+                        score = parseFloat(d.score) || score;
+                        power = parseFloat(d.power) || power;
+                        promoTwizzik = d.promoTwizzik || promoTwizzik;
+                        promoKoronka = d.promoKoronka || promoKoronka;
+                        promoVitya = d.promoVitya || promoVitya;
+                        updateUI();
+                        setStatus("ONLINE");
                     }
-                }
-                updateUI();
-                document.getElementById('loading-screen').style.display = 'none';
-            }).catch(e => {
-                console.log(e); // Ошибка? Не страшно, таймер спасет.
-            });
-            
-            if(localStorage.getItem('vibration')) isVibrationEnabled = localStorage.getItem('vibration') === 'true';
+                }).catch(() => setStatus("OFFLINE MODE"));
+            } else {
+                setStatus("NO CONNECTION");
+            }
         }
 
         function save() {
             localStorage.setItem('score', score);
-            localStorage.setItem('power', clickPower);
-            localStorage.setItem('promoTwizzik', promoTwizzik);
-            localStorage.setItem('promoKoronka', promoKoronka);
-            localStorage.setItem('promoVitya', promoVitya);
-            db.ref('players/' + userId).update({ name: userName, score: score, power: clickPower, promoTwizzik, promoKoronka, promoVitya });
+            localStorage.setItem('power', power);
+            localStorage.setItem('pt', promoTwizzik);
+            localStorage.setItem('pk', promoKoronka);
+            localStorage.setItem('pv', promoVitya);
+            
+            if(db) {
+                db.ref('players/' + userId).update({
+                    name: userName, score: score, power: power,
+                    promoTwizzik, promoKoronka, promoVitya
+                });
+            }
         }
 
         function doClick() {
-            score += clickPower;
-            if (isVibrationEnabled) tg.HapticFeedback.impactOccurred('light');
+            score += power;
+            tg.HapticFeedback.impactOccurred('light');
             const btn = document.getElementById('clickBtn');
-            btn.style.transform = "scale(0.92)";
-            setTimeout(() => btn.style.transform = "scale(1)", 80);
+            btn.style.transform = "scale(0.95)";
+            setTimeout(() => btn.style.transform = "scale(1)", 50);
             updateUI();
-            if (Math.random() < 0.1) save();
+            if(Math.random() < 0.2) save();
         }
 
         function buy(p, c) {
-            if (score >= c) {
-                score -= c; clickPower += p;
-                if (isVibrationEnabled) tg.HapticFeedback.notificationOccurred('success');
+            if(score >= c) {
+                score -= c; power += p;
+                tg.HapticFeedback.notificationOccurred('success');
                 save(); updateUI();
             }
         }
@@ -300,42 +258,75 @@
         function activatePromo() {
             const code = document.getElementById('promoInput').value.toLowerCase().trim();
             const msg = document.getElementById('promo-msg');
-            if (code === "twizzik") {
-                if (promoTwizzik) errorMsg(msg, "Уже активирован");
-                else { score += 5000000000; promoTwizzik = true; enableGodMode(); successMsg(msg, "+5 МЛРД"); }
-            } else if (code === "koronka") {
-                if (promoKoronka) errorMsg(msg, "Уже активирован");
-                else { score += 100000; promoKoronka = true; successMsg(msg, "+100K"); }
-            } else if (code === "vitya") {
-                if (promoVitya) errorMsg(msg, "Уже активирован");
-                else { score += 364; promoVitya = true; successMsg(msg, "+364"); }
-            } else { errorMsg(msg, "Неверный код"); }
-        }
+            let reward = 0;
+            let success = false;
 
-        function successMsg(el, txt) { el.style.color = "#2ecc71"; el.innerText = "✅ " + txt; save(); updateUI(); }
-        function errorMsg(el, txt) { el.style.color = "#e74c3c"; el.innerText = "❌ " + txt; if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error'); }
-        function enableGodMode() { document.getElementById('brand-label').innerText = "TWIZZIK GOD MODE"; document.getElementById('brand-label').style.boxShadow = "0 0 15px var(--accent)"; }
-        function easterEgg() { easterCount++; if(easterCount===5) { alert("🍊 Twizzik is watching you!"); easterCount=0; } }
-        
-        function resetProgress() {
-            if(confirm("Сбросить весь прогресс?")) {
-                score=0; clickPower=1; promoTwizzik=false; promoKoronka=false; promoVitya=false;
-                save(); location.reload();
+            if(code === "twizzik") {
+                if(promoTwizzik) return msg.innerText = "Уже был!";
+                reward = 5000000000; promoTwizzik = true; success = true;
+            } else if(code === "koronka") {
+                if(promoKoronka) return msg.innerText = "Уже был!";
+                reward = 100000; promoKoronka = true; success = true;
+            } else if(code === "vitya") {
+                if(promoVitya) return msg.innerText = "Уже был!";
+                reward = 364; promoVitya = true; success = true;
+            } else {
+                msg.style.color = "red"; msg.innerText = "Неверный код";
+            }
+
+            if(success) {
+                score += reward;
+                msg.style.color = "lime"; msg.innerText = "Успех! +" + format(reward);
+                tg.HapticFeedback.notificationOccurred('success');
+                save(); updateUI();
             }
         }
-        function toggleVibration() { isVibrationEnabled = document.getElementById('vibrationToggle').checked; localStorage.setItem('vibration', isVibrationEnabled); }
 
-        function switchTab(t, el) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.getElementById('tab-' + t).classList.add('active');
-            document.querySelectorAll('.dock-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-            if(isVibrationEnabled) tg.HapticFeedback.selectionChanged();
-            if (t === 'leaders') save();
+        function updateUI() {
+            document.getElementById('score').innerText = format(score);
+            document.getElementById('power').innerText = format(power);
+            
+            let html = '';
+            upgrades.forEach(u => {
+                let dis = score < u.c ? 'disabled' : '';
+                html += `<div class="card"><div><b>${u.name}</b><br><small>+${format(u.p)}</small></div><button class="btn-buy" ${dis} onclick="buy(${u.p}, ${u.c})">${format(u.c)}</button></div>`;
+            });
+            document.getElementById('shop-container').innerHTML = html;
         }
 
-        function formatNum(n) {
-            if (n >= 1e21) return (n/1e21).toFixed(2) + 'Sx';
-            if (n >= 1e18) return (n/1e18).toFixed(2) + 'Qi';
-            if (n >= 1e15) return (n/1e15).toFixed(2) + 'Q';
-            if (n >= 1e12) return (n/1e12).toFixed(2)
+        function tab(t, el) {
+            document.querySelectorAll('.content').forEach(e => e.classList.remove('active'));
+            document.getElementById('tab-'+t).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            el.classList.add('active');
+            if(t === 'leaders') loadLeaders();
+        }
+
+        function loadLeaders() {
+            if(!db) return;
+            db.ref('players').orderByChild('score').limitToLast(50).on('value', snap => {
+                let html = '';
+                let arr = [];
+                snap.forEach(c => arr.push(c.val()));
+                arr.reverse();
+                arr.forEach((p, i) => {
+                    let style = p.name === userName ? "border:1px solid orange" : "";
+                    html += `<div class="card" style="${style}"><div style="display:flex; gap:10px;"><b>#${i+1}</b> <span>${p.name}</span></div><div>${format(p.score)}</div></div>`;
+                });
+                document.getElementById('leaders-list').innerHTML = html;
+            });
+        }
+
+        function format(n) {
+            if (n >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+            if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+            if (n >= 1e3) return (n / 1e3).toFixed(1) + 'K';
+            return Math.floor(n).toLocaleString();
+        }
+
+        function setStatus(txt) { document.getElementById('status-text').innerText = txt; }
+
+        start();
+    </script>
+</body>
+</html>
