@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin Royal</title>
+    <title>Mandarin Premium Fixed</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -15,21 +15,18 @@
             --glass: rgba(255, 255, 255, 0.08);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text: #ffffff;
-            --accent: #ff9f43; /* Сочный оранжевый */
+            --accent: #ff9f43;
             --gold: linear-gradient(to bottom, #f1c40f, #f39c12);
             --neon-glow: 0 0 20px rgba(255, 159, 67, 0.6);
         }
 
         body {
             margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-gradient);
             color: var(--text);
-            height: 100vh;
-            display: flex; flex-direction: column;
-            overflow: hidden;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            height: 100vh; display: flex; flex-direction: column;
+            overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
         /* ЭКРАН ЗАГРУЗКИ */
@@ -48,134 +45,68 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* ШАПКА */
+        /* ИНТЕРФЕЙС */
         .header {
             text-align: center; padding: 20px;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(15px);
-            border-bottom: 1px solid var(--glass-border);
-            z-index: 10;
+            background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border); z-index: 10;
         }
         .score-label { font-size: 12px; opacity: 0.6; letter-spacing: 1px; text-transform: uppercase; }
         .score-value {
             font-size: 42px; font-weight: 900;
             background: var(--gold); -webkit-background-clip: text; color: transparent;
-            text-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
-            margin: 5px 0;
+            text-shadow: 0 5px 15px rgba(243, 156, 18, 0.3); margin: 5px 0;
         }
         .brand-pill {
             background: rgba(255, 159, 67, 0.2); color: var(--accent);
             padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: bold;
-            display: inline-block; margin-top: 5px; box-shadow: 0 0 10px rgba(255, 159, 67, 0.2);
+            display: inline-block; margin-top: 5px;
         }
 
-        /* КОНТЕНТ */
         .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 110px; display: none; }
         .content.active { display: flex; flex-direction: column; animation: fadeUp 0.3s ease; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* МАНДАРИН (КНОПКА) */
-        .mandarin-container {
-            position: relative; display: flex; justify-content: center; align-items: center;
-            height: 100%; flex-direction: column;
-        }
+        .mandarin-container { position: relative; display: flex; justify-content: center; align-items: center; height: 100%; flex-direction: column; }
         .big-button {
             width: 260px; height: 260px;
             background: radial-gradient(circle at 35% 35%, #ffb347, #ff8008);
-            border-radius: 50%;
-            border: 4px solid rgba(255,255,255,0.1);
-            box-shadow: 
-                inset 0 0 20px rgba(255,255,255,0.3),
-                0 10px 40px rgba(255, 128, 8, 0.4),
-                0 0 0 15px rgba(255, 128, 8, 0.05); /* Внешнее свечение */
+            border-radius: 50%; border: 4px solid rgba(255,255,255,0.1);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.3), 0 10px 40px rgba(255, 128, 8, 0.4);
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: transform 0.08s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
+            cursor: pointer; transition: transform 0.08s; position: relative;
         }
         .big-button:active { transform: scale(0.92); }
-        .big-button span { font-size: 140px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)); pointer-events: none; }
+        .big-button span { font-size: 140px; pointer-events: none; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)); }
         
-        /* КАРТОЧКИ (Магазин, Топ) */
         .card {
-            background: var(--glass);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--glass-border);
-            border-radius: 18px;
-            padding: 15px;
-            margin-bottom: 12px;
-            display: flex; align-items: center; justify-content: space-between;
-            transition: transform 0.1s;
+            background: var(--glass); backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border); border-radius: 18px;
+            padding: 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
         }
-        .card:active { transform: scale(0.98); background: rgba(255,255,255,0.12); }
+        .price-btn { background: var(--accent); color: #1e1e1e; border: none; padding: 8px 16px; border-radius: 12px; font-weight: 800; font-size: 13px; }
+        .price-btn:disabled { background: #444; color: #777; }
 
-        .item-info b { display: block; font-size: 15px; margin-bottom: 4px; }
-        .item-info small { color: #aaa; font-size: 12px; }
-        
-        .price-btn {
-            background: var(--accent);
-            color: #1e1e1e;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-weight: 800;
-            font-size: 13px;
-            box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3);
-        }
-        .price-btn:disabled { background: #444; color: #777; box-shadow: none; }
-
-        /* ТОП ИГРОКОВ */
-        .rank-badge {
-            width: 32px; height: 32px; border-radius: 10px;
-            background: #333; display: flex; align-items: center; justify-content: center;
-            font-weight: bold; margin-right: 15px; font-size: 14px;
-        }
-        .rank-1 { background: linear-gradient(45deg, #FFD700, #FDB931); color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+        .rank-badge { width: 32px; height: 32px; border-radius: 10px; background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; font-size: 14px; }
+        .rank-1 { background: linear-gradient(45deg, #FFD700, #FDB931); color: #000; }
         .rank-2 { background: linear-gradient(45deg, #E0E0E0, #BDBDBD); color: #000; }
         .rank-3 { background: linear-gradient(45deg, #CD7F32, #A0522D); color: #000; }
 
-        /* ВВОД ПРОМОКОДА */
-        .promo-box {
-            background: var(--glass); padding: 25px; border-radius: 20px; text-align: center;
-            border: 1px solid var(--glass-border); margin-top: 40px;
-        }
-        .promo-input {
-            width: 100%; box-sizing: border-box;
-            padding: 15px; border-radius: 12px; border: none;
-            background: rgba(0,0,0,0.3); color: white;
-            font-size: 18px; text-align: center; outline: none;
-            margin-bottom: 15px; border: 1px solid transparent;
-        }
-        .promo-input:focus { border-color: var(--accent); }
-        
-        .action-btn {
-            width: 100%; padding: 15px;
-            background: linear-gradient(to right, #ff9f43, #ff6b6b);
-            border: none; border-radius: 12px;
-            color: white; font-weight: bold; font-size: 16px;
-            text-transform: uppercase; letter-spacing: 1px;
-            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
-        }
+        .promo-box { background: var(--glass); padding: 25px; border-radius: 20px; text-align: center; border: 1px solid var(--glass-border); margin-top: 40px; }
+        .promo-input { width: 100%; padding: 15px; border-radius: 12px; border: none; background: rgba(0,0,0,0.3); color: white; font-size: 18px; text-align: center; margin-bottom: 15px; box-sizing: border-box; }
+        .action-btn { width: 100%; padding: 15px; background: linear-gradient(to right, #ff9f43, #ff6b6b); border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 16px; }
 
-        /* НИЖНЕЕ МЕНЮ (DOCK) */
         .dock-nav {
             position: fixed; bottom: 20px; left: 20px; right: 20px;
-            background: rgba(20, 20, 30, 0.85);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            display: flex; justify-content: space-around;
-            padding: 12px 5px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.05);
-            z-index: 100;
+            background: rgba(20, 20, 30, 0.85); backdrop-filter: blur(20px);
+            border-radius: 24px; display: flex; justify-content: space-around;
+            padding: 12px 5px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05); z-index: 100;
         }
-        .dock-item {
-            display: flex; flex-direction: column; align-items: center;
-            color: #888; font-size: 10px; transition: 0.3s; flex: 1;
-        }
+        .dock-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; flex: 1; transition: 0.3s; }
         .dock-item.active { color: var(--accent); transform: translateY(-5px); }
-        .dock-icon { font-size: 24px; margin-bottom: 3px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        .dock-icon { font-size: 24px; margin-bottom: 3px; }
 
-        /* СВИТЧ */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
@@ -189,19 +120,18 @@
     <div id="loading-screen">
         <div class="loader"></div>
         <div style="margin-top: 15px; font-weight: 600; opacity: 0.7;">CONNECTING...</div>
+        <div id="debug-msg" style="margin-top:10px; color: red; font-size: 10px;"></div>
     </div>
 
     <div class="header">
         <div class="score-label">ВАШ БАЛАНС</div>
         <div class="score-value" id="score">0</div>
-        <div class="brand-pill" id="brand-label">PREMIUM V 16.0</div>
+        <div class="brand-pill" id="brand-label">PREMIUM V 17.0</div>
     </div>
 
     <div id="tab-game" class="content active">
         <div class="mandarin-container">
-            <div class="big-button" id="clickBtn" onclick="doClick()">
-                <span>🍊</span>
-            </div>
+            <div class="big-button" id="clickBtn" onclick="doClick()"><span>🍊</span></div>
             <div style="text-align: center; margin-top: 30px; font-size: 14px; opacity: 0.8;">
                 Сила клика: <span style="color: var(--accent); font-weight: bold;">+<span id="power">1</span></span>
             </div>
@@ -215,7 +145,7 @@
 
     <div id="tab-leaders" class="content">
         <h2 style="padding-left: 10px; margin-bottom: 5px;">🏆 Рейтинг</h2>
-        <div style="padding-left: 10px; font-size: 12px; opacity: 0.5; margin-bottom: 15px;">Топ игроков в реальном времени</div>
+        <div style="padding-left: 10px; font-size: 12px; opacity: 0.5; margin-bottom: 15px;">Топ игроков</div>
         <div id="leaders-list">Загрузка...</div>
     </div>
 
@@ -250,7 +180,9 @@
     </div>
 
     <script>
-        // --- КОНФИГУРАЦИЯ (ТВОИ КЛЮЧИ) ---
+        // ПЕРЕХВАТ ОШИБОК
+        window.onerror = function(msg) { document.getElementById('debug-msg').innerText = msg; setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 2000); };
+
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -261,11 +193,11 @@
             appId: ""
         };
 
-        try { firebase.initializeApp(firebaseConfig); } catch(e) {}
+        try { firebase.initializeApp(firebaseConfig); } catch(e) { console.log(e); }
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.setHeaderColor('#0f0c29'); // Цвет шапки в ТГ
+        tg.setHeaderColor('#0f0c29');
 
         let score = 0, clickPower = 1;
         let isVibrationEnabled = true;
@@ -279,7 +211,6 @@
             userName = tg.initDataUnsafe.user.first_name;
         }
 
-        // --- ТОВАРЫ (50 УРОВНЕЙ) ---
         const upgrades = [
             { name: "Палец", p: 1, c: 100 }, { name: "Кастет", p: 5, c: 500 }, { name: "Мышка", p: 15, c: 1500 },
             { name: "Клавиатура", p: 40, c: 3500 }, { name: "Макросы", p: 80, c: 6000 }, { name: "Друг", p: 150, c: 10000 },
@@ -300,14 +231,20 @@
             { name: "Создатель", p: 5000000000000000000, c: 400000000000000000000000 }, { name: "Сила Twizzik", p: 9999999999999999999, c: 999999999999999999999999 }
         ];
 
-        // --- ЛОГИКА ---
+        // ГЛАВНАЯ ФУНКЦИЯ (С ТАЙМЕРОМ СПАСЕНИЯ)
         function init() {
-            setTimeout(() => document.getElementById('loading-screen').style.opacity = '0', 2500);
-            setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 3000);
+            // Если через 3.5 секунды игра не загрузилась - убираем заставку принудительно
+            setTimeout(() => {
+                const l = document.getElementById('loading-screen');
+                if(l.style.display !== 'none') {
+                    l.style.opacity = '0';
+                    setTimeout(() => l.style.display = 'none', 500);
+                }
+            }, 3500);
 
             db.ref('players/' + userId).once('value').then(snap => {
                 const d = snap.val();
-                if (d) {
+                if(d) {
                     score = parseFloat(d.score) || 0;
                     clickPower = parseFloat(d.power) || 1;
                     promoTwizzik = d.promoTwizzik || false;
@@ -315,7 +252,7 @@
                     promoVitya = d.promoVitya || false;
                     if(promoTwizzik) enableGodMode();
                 } else {
-                    if (localStorage.getItem('score')) {
+                    if(localStorage.getItem('score')) {
                         score = parseFloat(localStorage.getItem('score'));
                         clickPower = parseFloat(localStorage.getItem('power'));
                         promoTwizzik = localStorage.getItem('promoTwizzik') === 'true';
@@ -326,11 +263,11 @@
                 }
                 updateUI();
                 document.getElementById('loading-screen').style.display = 'none';
-            }).catch(() => {
-                document.getElementById('loading-screen').style.display = 'none';
-                updateUI();
+            }).catch(e => {
+                console.log(e); // Ошибка? Не страшно, таймер спасет.
             });
-            if (localStorage.getItem('vibration')) isVibrationEnabled = localStorage.getItem('vibration') === 'true';
+            
+            if(localStorage.getItem('vibration')) isVibrationEnabled = localStorage.getItem('vibration') === 'true';
         }
 
         function save() {
@@ -346,7 +283,7 @@
             score += clickPower;
             if (isVibrationEnabled) tg.HapticFeedback.impactOccurred('light');
             const btn = document.getElementById('clickBtn');
-            btn.style.transform = "scale(0.90)";
+            btn.style.transform = "scale(0.92)";
             setTimeout(() => btn.style.transform = "scale(1)", 80);
             updateUI();
             if (Math.random() < 0.1) save();
@@ -377,6 +314,28 @@
 
         function successMsg(el, txt) { el.style.color = "#2ecc71"; el.innerText = "✅ " + txt; save(); updateUI(); }
         function errorMsg(el, txt) { el.style.color = "#e74c3c"; el.innerText = "❌ " + txt; if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error'); }
-        function enableGodMode() { 
-            const b = document.getElementById('brand-label');
-            b.innerText = "TWIZZIK GOD MODE"; b.style.color = "#ff9f43"; b.style.b
+        function enableGodMode() { document.getElementById('brand-label').innerText = "TWIZZIK GOD MODE"; document.getElementById('brand-label').style.boxShadow = "0 0 15px var(--accent)"; }
+        function easterEgg() { easterCount++; if(easterCount===5) { alert("🍊 Twizzik is watching you!"); easterCount=0; } }
+        
+        function resetProgress() {
+            if(confirm("Сбросить весь прогресс?")) {
+                score=0; clickPower=1; promoTwizzik=false; promoKoronka=false; promoVitya=false;
+                save(); location.reload();
+            }
+        }
+        function toggleVibration() { isVibrationEnabled = document.getElementById('vibrationToggle').checked; localStorage.setItem('vibration', isVibrationEnabled); }
+
+        function switchTab(t, el) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-' + t).classList.add('active');
+            document.querySelectorAll('.dock-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            if(isVibrationEnabled) tg.HapticFeedback.selectionChanged();
+            if (t === 'leaders') save();
+        }
+
+        function formatNum(n) {
+            if (n >= 1e21) return (n/1e21).toFixed(2) + 'Sx';
+            if (n >= 1e18) return (n/1e18).toFixed(2) + 'Qi';
+            if (n >= 1e15) return (n/1e15).toFixed(2) + 'Q';
+            if (n >= 1e12) return (n/1e12).toFixed(2)
