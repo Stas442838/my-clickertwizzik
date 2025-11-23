@@ -183,6 +183,7 @@
                     clickPower = parseFloat(data.power) || 1;
                     if(data.promoTwizzik) promoTwizzikUsed = data.promoTwizzik;
                     if(data.promoKoronka) promoKoronkaUsed = data.promoKoronka;
+                    if(data.promoVitya) promoVityaUsed = data.promoVitya;
                 } else {
                     if(localStorage.getItem('score')) {
                         score = parseFloat(localStorage.getItem('score'));
@@ -211,6 +212,7 @@
             localStorage.setItem('vibration', isVibrationEnabled);
             localStorage.setItem('promo_twizzik_used', promoTwizzikUsed);
             localStorage.setItem('promo_koronka_used', promoKoronkaUsed);
+            localStorage.setItem('promo_Vitya_used', promoVityaUsed);
         }
 
         function saveToCloud() {
