@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin Online 10.0</title>
+    <title>Mandarin Online</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -46,7 +46,7 @@
     <div class="header">
         <div style="font-size: 12px; opacity: 0.5;">БАЛАНС</div>
         <div class="score-value" id="score">0</div>
-        <div style="font-size: 10px; opacity: 0.3; margin-top: 5px; letter-spacing: 2px;">VERSION 10.0</div>
+        <div style="font-size: 10px; opacity: 0.3; margin-top: 5px; letter-spacing: 2px;">ONLINE • FINAL</div>
     </div>
 
     <div id="tab-game" class="content active">
@@ -66,14 +66,11 @@
     </div>
 
     <div id="tab-promo" class="content">
-        <h2>Промокод</h2>
-        <div style="text-align:center;">
-            <input type="text" id="promoInput" class="promo-input" placeholder="Введите код">
-            <button class="promo-btn" onclick="activatePromo()">ПОЛУЧИТЬ</button>
+        <h2>Секретный код</h2>
+        <div style="text-align:center; margin-top: 50px;">
+            <input type="text" id="promoInput" class="promo-input" placeholder="Введи код...">
+            <button class="promo-btn" onclick="activatePromo()">АКТИВИРОВАТЬ</button>
             <div id="promo-msg" style="margin-top:15px; font-weight:bold;"></div>
-            <div style="margin-top:20px; font-size:12px; opacity:0.5;">
-                Коды: Twizzik, Koronka
-            </div>
         </div>
     </div>
 
@@ -92,7 +89,7 @@
     </div>
 
     <script>
-        // 👇👇👇 ВСТАВЬ СВОИ КЛЮЧИ ТУТ 👇👇👇
+        // ✅ ТВОИ КЛЮЧИ ВСТАВЛЕНЫ:
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -102,7 +99,6 @@
             messagingSenderId: "",
             appId: ""
         };
-        // 👆👆👆 НЕ ЗАБУДЬ! 👆👆👆
 
         try { firebase.initializeApp(firebaseConfig); } catch(e) {}
         const db = firebase.database();
@@ -122,7 +118,6 @@
             userName = tg.initDataUnsafe.user.first_name;
         }
 
-        // 🔥 МЕГА СПИСОК: 50 УЛУЧШЕНИЙ 🔥
         const upgrades = [
             // Начало
             { name: "Палец", power: 1, cost: 100 },
@@ -186,7 +181,7 @@
 
         function loadGame() {
             if(localStorage.getItem('score')) {
-                score = parseFloat(localStorage.getItem('score')); // Используем float для огромных чисел
+                score = parseFloat(localStorage.getItem('score')); 
                 clickPower = parseFloat(localStorage.getItem('power'));
                 promoTwizzikUsed = localStorage.getItem('promo_twizzik_used') === 'true';
                 promoKoronkaUsed = localStorage.getItem('promo_koronka_used') === 'true';
@@ -216,7 +211,7 @@
             btn.style.transform = "scale(0.95)";
             setTimeout(() => btn.style.transform = "scale(1)", 50);
             updateUI();
-            if(Math.random() < 0.1) saveToCloud(); // Сохраняем случайно (оптимизация)
+            if(Math.random() < 0.1) saveToCloud();
         }
 
         function buy(power, cost) {
@@ -270,15 +265,14 @@
             if(tab === 'leaders') saveToCloud();
         }
 
-        // 🔢 ФОРМАТИРОВАНИЕ ОГРОМНЫХ ЧИСЕЛ
         function formatNumber(num) {
-            if (num >= 1e21) return (num / 1e21).toFixed(2) + 'Sx'; // Секстиллион
-            if (num >= 1e18) return (num / 1e18).toFixed(2) + 'Qi'; // Квинтиллион
-            if (num >= 1e15) return (num / 1e15).toFixed(2) + 'Q';  // Квадриллион
-            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';  // Триллион
-            if (num >= 1e9)  return (num / 1e9).toFixed(2) + 'B';   // Миллиард
-            if (num >= 1e6)  return (num / 1e6).toFixed(2) + 'M';   // Миллион
-            if (num >= 1e3)  return (num / 1e3).toFixed(1) + 'K';   // Тысяча
+            if (num >= 1e21) return (num / 1e21).toFixed(2) + 'Sx';
+            if (num >= 1e18) return (num / 1e18).toFixed(2) + 'Qi';
+            if (num >= 1e15) return (num / 1e15).toFixed(2) + 'Q';
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9)  return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6)  return (num / 1e6).toFixed(2) + 'M';
+            if (num >= 1e3)  return (num / 1e3).toFixed(1) + 'K';
             return num.toLocaleString();
         }
 
@@ -296,7 +290,6 @@
             document.getElementById('shop-container').innerHTML = html;
         }
 
-        // ТОП ИГРОКОВ
         db.ref('players').orderByChild('score').limitToLast(100).on('value', (snapshot) => {
             const list = document.getElementById('leaders-list');
             list.innerHTML = "";
