@@ -3,106 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin Unbreakable</title>
+    <title>Mandarin Royal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        :root { --bg: #1c1c1e; --card: #2c2c2e; --text: #fff; --accent: #ff9500; --gold: #ffd700; --danger: #ff3b30; --input: #3a3a3c; }
-        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; user-select: none; overflow: hidden; }
-        
+        /* --- ПРЕМИУМ СТИЛИ --- */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+            --accent: #ff9f43; /* Сочный оранжевый */
+            --gold: linear-gradient(to bottom, #f1c40f, #f39c12);
+            --neon-glow: 0 0 20px rgba(255, 159, 67, 0.6);
+        }
+
+        body {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text);
+            height: 100vh;
+            display: flex; flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         /* ЭКРАН ЗАГРУЗКИ */
-        #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s; }
-        .loader { border: 4px solid #333; border-top: 4px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        #loading-screen {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: #0f0c29; z-index: 9999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        .loader {
+            width: 50px; height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: var(--neon-glow);
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* ШАПКА */
+        .header {
+            text-align: center; padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 10;
+        }
+        .score-label { font-size: 12px; opacity: 0.6; letter-spacing: 1px; text-transform: uppercase; }
+        .score-value {
+            font-size: 42px; font-weight: 900;
+            background: var(--gold); -webkit-background-clip: text; color: transparent;
+            text-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+            margin: 5px 0;
+        }
+        .brand-pill {
+            background: rgba(255, 159, 67, 0.2); color: var(--accent);
+            padding: 4px 10px; border-radius: 20px; font-size: 10px; font-weight: bold;
+            display: inline-block; margin-top: 5px; box-shadow: 0 0 10px rgba(255, 159, 67, 0.2);
+        }
+
+        /* КОНТЕНТ */
+        .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 110px; display: none; }
+        .content.active { display: flex; flex-direction: column; animation: fadeUp 0.3s ease; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* МАНДАРИН (КНОПКА) */
+        .mandarin-container {
+            position: relative; display: flex; justify-content: center; align-items: center;
+            height: 100%; flex-direction: column;
+        }
+        .big-button {
+            width: 260px; height: 260px;
+            background: radial-gradient(circle at 35% 35%, #ffb347, #ff8008);
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.1);
+            box-shadow: 
+                inset 0 0 20px rgba(255,255,255,0.3),
+                0 10px 40px rgba(255, 128, 8, 0.4),
+                0 0 0 15px rgba(255, 128, 8, 0.05); /* Внешнее свечение */
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: transform 0.08s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        .big-button:active { transform: scale(0.92); }
+        .big-button span { font-size: 140px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3)); pointer-events: none; }
         
-        /* ОСНОВНОЙ ИНТЕРФЕЙС */
-        .header { text-align: center; padding: 15px; background: rgba(44,44,46,0.9); border-bottom: 1px solid #333; }
-        .score-value { font-size: 36px; font-weight: 800; color: var(--gold); text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
-        .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: none; }
-        .content.active { display: flex; flex-direction: column; }
+        /* КАРТОЧКИ (Магазин, Топ) */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 15px;
+            margin-bottom: 12px;
+            display: flex; align-items: center; justify-content: space-between;
+            transition: transform 0.1s;
+        }
+        .card:active { transform: scale(0.98); background: rgba(255,255,255,0.12); }
+
+        .item-info b { display: block; font-size: 15px; margin-bottom: 4px; }
+        .item-info small { color: #aaa; font-size: 12px; }
         
-        .big-button { width: 240px; height: 240px; background: radial-gradient(circle, #ffb347, #ff8c00); border-radius: 50%; border: 5px solid #e67e22; box-shadow: 0 0 30px rgba(255,140,0,0.3); margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 90px; cursor: pointer; transition: transform 0.05s; }
-        .big-button:active { transform: scale(0.95); }
+        .price-btn {
+            background: var(--accent);
+            color: #1e1e1e;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 13px;
+            box-shadow: 0 4px 10px rgba(255, 159, 67, 0.3);
+        }
+        .price-btn:disabled { background: #444; color: #777; box-shadow: none; }
+
+        /* ТОП ИГРОКОВ */
+        .rank-badge {
+            width: 32px; height: 32px; border-radius: 10px;
+            background: #333; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; margin-right: 15px; font-size: 14px;
+        }
+        .rank-1 { background: linear-gradient(45deg, #FFD700, #FDB931); color: #000; box-shadow: 0 0 10px rgba(255, 215, 0, 0.4); }
+        .rank-2 { background: linear-gradient(45deg, #E0E0E0, #BDBDBD); color: #000; }
+        .rank-3 { background: linear-gradient(45deg, #CD7F32, #A0522D); color: #000; }
+
+        /* ВВОД ПРОМОКОДА */
+        .promo-box {
+            background: var(--glass); padding: 25px; border-radius: 20px; text-align: center;
+            border: 1px solid var(--glass-border); margin-top: 40px;
+        }
+        .promo-input {
+            width: 100%; box-sizing: border-box;
+            padding: 15px; border-radius: 12px; border: none;
+            background: rgba(0,0,0,0.3); color: white;
+            font-size: 18px; text-align: center; outline: none;
+            margin-bottom: 15px; border: 1px solid transparent;
+        }
+        .promo-input:focus { border-color: var(--accent); }
         
-        .list-item { background: var(--card); padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
-        .buy-btn { background: var(--accent); color: #000; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; }
-        .buy-btn:disabled { background: #444; color: #888; }
-        
-        .promo-input { width: 80%; padding: 12px; border-radius: 8px; border: none; background: var(--input); color: #fff; text-align: center; margin: 0 auto 10px; display: block; font-size: 16px; }
-        .promo-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; color: #000; }
-        
-        .bottom-nav { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(44,44,46,0.95); border-radius: 20px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; box-shadow: 0 5px 20px #000; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; }
-        .nav-item.active { color: var(--accent); transform: scale(1.1); }
-        .nav-icon { font-size: 22px; margin-bottom: 2px; }
-        
-        /* ДЛЯ ЛИДЕРОВ */
-        .rank { width: 25px; font-weight: bold; text-align: center; margin-right: 10px; }
-        .avatar { width: 30px; height: 30px; background: #444; border-radius: 50%; margin-right: 10px; display: flex; align-items: center; justify-content: center; }
+        .action-btn {
+            width: 100%; padding: 15px;
+            background: linear-gradient(to right, #ff9f43, #ff6b6b);
+            border: none; border-radius: 12px;
+            color: white; font-weight: bold; font-size: 16px;
+            text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 5px 20px rgba(255, 107, 107, 0.4);
+        }
+
+        /* НИЖНЕЕ МЕНЮ (DOCK) */
+        .dock-nav {
+            position: fixed; bottom: 20px; left: 20px; right: 20px;
+            background: rgba(20, 20, 30, 0.85);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            display: flex; justify-content: space-around;
+            padding: 12px 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.05);
+            z-index: 100;
+        }
+        .dock-item {
+            display: flex; flex-direction: column; align-items: center;
+            color: #888; font-size: 10px; transition: 0.3s; flex: 1;
+        }
+        .dock-item.active { color: var(--accent); transform: translateY(-5px); }
+        .dock-icon { font-size: 24px; margin-bottom: 3px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+
+        /* СВИТЧ */
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--accent); }
+        input:checked + .slider:before { transform: translateX(22px); }
     </style>
 </head>
 <body>
 
     <div id="loading-screen">
         <div class="loader"></div>
-        <div style="font-weight:bold; margin-top:10px;">Запуск...</div>
-        <div id="error-log" style="color:red; font-size:10px; margin-top:20px; max-width:80%; text-align:center;"></div>
+        <div style="margin-top: 15px; font-weight: 600; opacity: 0.7;">CONNECTING...</div>
     </div>
 
     <div class="header">
-        <div style="font-size: 10px; opacity: 0.5;">БАЛАНС</div>
+        <div class="score-label">ВАШ БАЛАНС</div>
         <div class="score-value" id="score">0</div>
-        <div style="font-size: 9px; opacity: 0.3; letter-spacing: 2px; margin-top:5px;" id="brand-label">NO BOTS • V 15.0</div>
+        <div class="brand-pill" id="brand-label">PREMIUM V 16.0</div>
     </div>
 
     <div id="tab-game" class="content active">
-        <div class="big-button" id="clickBtn" onclick="doClick()"><span>🍊</span></div>
-        <div style="text-align: center; margin-top: 20px;">Сила: +<span id="power" style="color:var(--accent)">1</span></div>
+        <div class="mandarin-container">
+            <div class="big-button" id="clickBtn" onclick="doClick()">
+                <span>🍊</span>
+            </div>
+            <div style="text-align: center; margin-top: 30px; font-size: 14px; opacity: 0.8;">
+                Сила клика: <span style="color: var(--accent); font-weight: bold;">+<span id="power">1</span></span>
+            </div>
+        </div>
     </div>
 
     <div id="tab-shop" class="content">
-        <h2>Магазин</h2>
+        <h2 style="padding-left: 10px; margin-bottom: 15px;">🛍 Магазин</h2>
         <div id="shop-container"></div>
     </div>
 
     <div id="tab-leaders" class="content">
-        <h2>🏆 Топ Игроков</h2>
+        <h2 style="padding-left: 10px; margin-bottom: 5px;">🏆 Рейтинг</h2>
+        <div style="padding-left: 10px; font-size: 12px; opacity: 0.5; margin-bottom: 15px;">Топ игроков в реальном времени</div>
         <div id="leaders-list">Загрузка...</div>
     </div>
 
     <div id="tab-promo" class="content">
-        <h2>Промокод</h2>
-        <div style="text-align:center; margin-top:40px;">
-            <input type="text" id="promoInput" class="promo-input" placeholder="Введи код">
-            <button class="promo-btn" onclick="activatePromo()">АКТИВИРОВАТЬ</button>
-            <div id="promo-msg" style="margin-top:15px; font-weight:bold;"></div>
+        <div class="promo-box">
+            <h2 style="margin: 0 0 15px 0;">Секретный код</h2>
+            <input type="text" id="promoInput" class="promo-input" placeholder="Введи промокод...">
+            <button class="action-btn" onclick="activatePromo()">АКТИВИРОВАТЬ</button>
+            <div id="promo-msg" style="margin-top: 15px; font-weight: bold;"></div>
         </div>
     </div>
 
     <div id="tab-settings" class="content">
-        <h2>Меню</h2>
-        <div class="list-item" onclick="resetProgress()" style="justify-content: center; color: var(--danger); cursor: pointer;"><b>🗑 Сбросить все</b></div>
-        <div style="text-align:center; margin-top:20px; opacity:0.3; font-size:10px;" onclick="easterEgg()">v15.0 by Twizzik</div>
+        <h2 style="padding-left: 10px; margin-bottom: 15px;">⚙️ Настройки</h2>
+        <div class="card">
+            <div><b>Вибрация</b><br><small>Haptic Feedback</small></div>
+            <label class="switch"><input type="checkbox" id="vibrationToggle" checked onchange="toggleVibration()"><span class="slider"></span></label>
+        </div>
+        <div class="card" onclick="resetProgress()" style="cursor: pointer; border: 1px solid rgba(255, 59, 48, 0.3);">
+            <div style="color: #ff3b30; font-weight: bold;">🗑 Удалить прогресс</div>
+            <div style="opacity: 0.5;">></div>
+        </div>
+        <div style="text-align:center; margin-top:30px; opacity:0.2; font-size:10px; letter-spacing:1px;" onclick="easterEgg()">DESIGNED BY TWIZZIK</div>
     </div>
 
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="switchTab('game', this)"><span class="nav-icon">🍊</span><span>Клик</span></div>
-        <div class="nav-item" onclick="switchTab('shop', this)"><span class="nav-icon">🛍</span><span>Шоп</span></div>
-        <div class="nav-item" onclick="switchTab('leaders', this)"><span class="nav-icon">🏆</span><span>Топ</span></div>
-        <div class="nav-item" onclick="switchTab('promo', this)"><span class="nav-icon">🎁</span><span>Код</span></div>
-        <div class="nav-item" onclick="switchTab('settings', this)"><span class="nav-icon">⚙️</span><span>Меню</span></div>
+    <div class="dock-nav">
+        <div class="dock-item active" onclick="switchTab('game', this)"><span class="dock-icon">🍊</span><span>Game</span></div>
+        <div class="dock-item" onclick="switchTab('shop', this)"><span class="dock-icon">🛍</span><span>Shop</span></div>
+        <div class="dock-item" onclick="switchTab('leaders', this)"><span class="dock-icon">🏆</span><span>Top</span></div>
+        <div class="dock-item" onclick="switchTab('promo', this)"><span class="dock-icon">🎁</span><span>Code</span></div>
+        <div class="dock-item" onclick="switchTab('settings', this)"><span class="dock-icon">⚙️</span><span>Set</span></div>
     </div>
 
     <script>
-        // ГЛОБАЛЬНЫЙ ПЕРЕХВАТЧИК ОШИБОК (Чтобы видеть, почему висит)
-        window.onerror = function(msg, url, line) {
-            document.getElementById('error-log').innerText = "Ошибка: " + msg;
-            // Если ошибка есть - убираем загрузку через 2 сек, чтобы дать играть
-            setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 2000);
-        };
-
+        // --- КОНФИГУРАЦИЯ (ТВОИ КЛЮЧИ) ---
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -113,73 +261,76 @@
             appId: ""
         };
 
-        // Инициализация
-        try { firebase.initializeApp(firebaseConfig); } catch(e) { console.error(e); }
+        try { firebase.initializeApp(firebaseConfig); } catch(e) {}
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.setHeaderColor('#0f0c29'); // Цвет шапки в ТГ
 
-        // Переменные
         let score = 0, clickPower = 1;
+        let isVibrationEnabled = true;
         let promoTwizzik = false, promoKoronka = false, promoVitya = false;
         let easterCount = 0;
+        
         let userId = "guest_" + Math.floor(Math.random()*10000);
         let userName = "Guest";
-
-        if(tg.initDataUnsafe?.user) {
+        if (tg.initDataUnsafe?.user) {
             userId = tg.initDataUnsafe.user.id.toString();
             userName = tg.initDataUnsafe.user.first_name;
         }
 
-        // ТОВАРЫ
+        // --- ТОВАРЫ (50 УРОВНЕЙ) ---
         const upgrades = [
-            { name: "Палец", p: 1, c: 100 }, { name: "Мышка", p: 5, c: 500 },
-            { name: "Клавиатура", p: 15, c: 1500 }, { name: "Макросы", p: 40, c: 3500 },
-            { name: "Друг", p: 100, c: 7500 }, { name: "Семья", p: 300, c: 20000 },
-            { name: "Скрипт", p: 1000, c: 50000 }, { name: "Хакер", p: 2500, c: 150000 },
-            { name: "Ботнет", p: 6000, c: 500000 }, { name: "Ферма", p: 15000, c: 2000000 },
-            { name: "Сервер", p: 40000, c: 10000000 }, { name: "ИИ", p: 100000, c: 50000000 },
-            { name: "SpaceX", p: 500000, c: 200000000 }, { name: "Марс", p: 2000000, c: 1000000000 },
-            { name: "Галактика", p: 10000000, c: 10000000000 }, { name: "Сила Twizzik", p: 999999999, c: 99999999999 }
+            { name: "Палец", p: 1, c: 100 }, { name: "Кастет", p: 5, c: 500 }, { name: "Мышка", p: 15, c: 1500 },
+            { name: "Клавиатура", p: 40, c: 3500 }, { name: "Макросы", p: 80, c: 6000 }, { name: "Друг", p: 150, c: 10000 },
+            { name: "Семья", p: 300, c: 25000 }, { name: "Офис", p: 600, c: 50000 }, { name: "Скрипт", p: 1200, c: 120000 },
+            { name: "Хакер", p: 2500, c: 300000 }, { name: "Видеокарта", p: 5000, c: 700000 }, { name: "Процессор", p: 10000, c: 1500000 },
+            { name: "Сервер", p: 25000, c: 4000000 }, { name: "Ботнет", p: 60000, c: 10000000 }, { name: "Майнинг", p: 150000, c: 25000000 },
+            { name: "Крипта", p: 350000, c: 60000000 }, { name: "Нейросеть", p: 800000, c: 150000000 }, { name: "Дата-центр", p: 2000000, c: 400000000 },
+            { name: "ИИ", p: 5000000, c: 1000000000 }, { name: "Стартап", p: 12000000, c: 3000000000 }, { name: "Корпорация", p: 30000000, c: 8000000000 },
+            { name: "Спутник", p: 75000000, c: 20000000000 }, { name: "Ракета", p: 200000000, c: 60000000000 }, { name: "SpaceX", p: 500000000, c: 150000000000 },
+            { name: "Луна", p: 1200000000, c: 400000000000 }, { name: "Марс", p: 3000000000, c: 1000000000000 }, { name: "Колония", p: 8000000000, c: 3000000000000 },
+            { name: "Планета", p: 20000000000, c: 8000000000000 }, { name: "Звезда", p: 50000000000, c: 25000000000000 }, { name: "Солнце", p: 120000000000, c: 70000000000000 },
+            { name: "Черная Дыра", p: 300000000000, c: 200000000000000 }, { name: "Сверхновая", p: 800000000000, c: 600000000000000 }, { name: "Туманность", p: 2000000000000, c: 2000000000000000 },
+            { name: "Галактика", p: 5000000000000, c: 6000000000000000 }, { name: "Млечный Путь", p: 12000000000000, c: 20000000000000000 }, { name: "Квазар", p: 30000000000000, c: 80000000000000000 },
+            { name: "Вселенная", p: 80000000000000, c: 250000000000000000 }, { name: "Мультивселенная", p: 200000000000000, c: 750000000000000000 }, { name: "Параллель", p: 500000000000000, c: 2500000000000000000 },
+            { name: "Измерение X", p: 1200000000000000, c: 8000000000000000000 }, { name: "Квант. Поле", p: 3000000000000000, c: 25000000000000000000 }, { name: "Время", p: 8000000000000000, c: 80000000000000000000 },
+            { name: "Материя", p: 20000000000000000, c: 250000000000000000000 }, { name: "Антиматерия", p: 50000000000000000, c: 800000000000000000000 }, { name: "Пустота", p: 120000000000000000, c: 3000000000000000000000 },
+            { name: "Матрица", p: 300000000000000000, c: 10000000000000000000000 }, { name: "Перчатка Таноса", p: 800000000000000000, c: 35000000000000000000000 }, { name: "Реальность", p: 2000000000000000000, c: 100000000000000000000000 },
+            { name: "Создатель", p: 5000000000000000000, c: 400000000000000000000000 }, { name: "Сила Twizzik", p: 9999999999999999999, c: 999999999999999999999999 }
         ];
 
-        // ЗАГРУЗКА ИГРЫ
+        // --- ЛОГИКА ---
         function init() {
-            // АВАРИЙНЫЙ ТАЙМЕР: УБИРАЕТ ЭКРАН ЗАГРУЗКИ ЧЕРЕЗ 3 СЕК, ДАЖЕ ЕСЛИ ИНТЕРНЕТА НЕТ
-            setTimeout(() => {
-                document.getElementById('loading-screen').style.display = 'none';
-            }, 3000);
+            setTimeout(() => document.getElementById('loading-screen').style.opacity = '0', 2500);
+            setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 3000);
 
             db.ref('players/' + userId).once('value').then(snap => {
                 const d = snap.val();
-                if(d) {
+                if (d) {
                     score = parseFloat(d.score) || 0;
                     clickPower = parseFloat(d.power) || 1;
-                    if(d.promoTwizzik) { promoTwizzik = true; enableGodMode(); }
+                    promoTwizzik = d.promoTwizzik || false;
                     promoKoronka = d.promoKoronka || false;
                     promoVitya = d.promoVitya || false;
+                    if(promoTwizzik) enableGodMode();
                 } else {
-                    // Если нет в облаке, пробуем локально
-                    if(localStorage.getItem('score')) {
+                    if (localStorage.getItem('score')) {
                         score = parseFloat(localStorage.getItem('score'));
                         clickPower = parseFloat(localStorage.getItem('power'));
                         promoTwizzik = localStorage.getItem('promoTwizzik') === 'true';
-                        if(promoTwizzik) enableGodMode();
                         promoKoronka = localStorage.getItem('promoKoronka') === 'true';
                         promoVitya = localStorage.getItem('promoVitya') === 'true';
+                        if(promoTwizzik) enableGodMode();
                     }
                 }
-                // Успешно загрузились - убираем экран сразу
+                updateUI();
+                document.getElementById('loading-screen').style.display = 'none';
+            }).catch(() => {
                 document.getElementById('loading-screen').style.display = 'none';
                 updateUI();
-            }).catch(e => {
-                console.log(e); // Ошибка сети, сработает таймер
-                if(localStorage.getItem('score')) {
-                    score = parseFloat(localStorage.getItem('score'));
-                    clickPower = parseFloat(localStorage.getItem('power'));
-                }
-                updateUI();
             });
+            if (localStorage.getItem('vibration')) isVibrationEnabled = localStorage.getItem('vibration') === 'true';
         }
 
         function save() {
@@ -188,27 +339,23 @@
             localStorage.setItem('promoTwizzik', promoTwizzik);
             localStorage.setItem('promoKoronka', promoKoronka);
             localStorage.setItem('promoVitya', promoVitya);
-            
-            db.ref('players/' + userId).update({
-                name: userName, score: score, power: clickPower,
-                promoTwizzik: promoTwizzik, promoKoronka: promoKoronka, promoVitya: promoVitya
-            });
+            db.ref('players/' + userId).update({ name: userName, score: score, power: clickPower, promoTwizzik, promoKoronka, promoVitya });
         }
 
         function doClick() {
             score += clickPower;
-            tg.HapticFeedback.impactOccurred('light');
+            if (isVibrationEnabled) tg.HapticFeedback.impactOccurred('light');
             const btn = document.getElementById('clickBtn');
-            btn.style.transform = "scale(0.95)";
-            setTimeout(() => btn.style.transform = "scale(1)", 50);
+            btn.style.transform = "scale(0.90)";
+            setTimeout(() => btn.style.transform = "scale(1)", 80);
             updateUI();
-            if(Math.random() < 0.1) save();
+            if (Math.random() < 0.1) save();
         }
 
         function buy(p, c) {
-            if(score >= c) {
+            if (score >= c) {
                 score -= c; clickPower += p;
-                tg.HapticFeedback.notificationOccurred('success');
+                if (isVibrationEnabled) tg.HapticFeedback.notificationOccurred('success');
                 save(); updateUI();
             }
         }
@@ -216,94 +363,20 @@
         function activatePromo() {
             const code = document.getElementById('promoInput').value.toLowerCase().trim();
             const msg = document.getElementById('promo-msg');
-            
-            if(code === "twizzik") {
-                if(promoTwizzik) errorMsg(msg, "Уже активирован");
-                else { score+=5000000000; promoTwizzik=true; enableGodMode(); successMsg(msg, "+5 МЛРД"); }
-            } else if(code === "koronka") {
-                if(promoKoronka) errorMsg(msg, "Уже активирован");
-                else { score+=100000; promoKoronka=true; successMsg(msg, "+100K"); }
-            } else if(code === "vitya") {
-                if(promoVitya) errorMsg(msg, "Уже активирован");
-                else { score+=364; promoVitya=true; successMsg(msg, "+364"); }
-            } else {
-                errorMsg(msg, "Неверный код");
-            }
+            if (code === "twizzik") {
+                if (promoTwizzik) errorMsg(msg, "Уже активирован");
+                else { score += 5000000000; promoTwizzik = true; enableGodMode(); successMsg(msg, "+5 МЛРД"); }
+            } else if (code === "koronka") {
+                if (promoKoronka) errorMsg(msg, "Уже активирован");
+                else { score += 100000; promoKoronka = true; successMsg(msg, "+100K"); }
+            } else if (code === "vitya") {
+                if (promoVitya) errorMsg(msg, "Уже активирован");
+                else { score += 364; promoVitya = true; successMsg(msg, "+364"); }
+            } else { errorMsg(msg, "Неверный код"); }
         }
 
-        function successMsg(el, txt) { el.style.color = "var(--accent)"; el.innerText = "✅ " + txt; save(); updateUI(); }
-        function errorMsg(el, txt) { el.style.color = "var(--danger)"; el.innerText = "❌ " + txt; tg.HapticFeedback.notificationOccurred('error'); }
-
-        function enableGodMode() {
-            document.getElementById('brand-label').innerText = "TWIZZIK GOD MODE";
-            document.getElementById('brand-label').style.color = "#ff9500";
-        }
-
-        function resetProgress() {
-            if(confirm("Сбросить всё?")) {
-                score = 0; clickPower = 1;
-                promoTwizzik = false; promoKoronka = false; promoVitya = false;
-                save(); location.reload();
-            }
-        }
-
-        function easterEgg() {
-            easterCount++;
-            if(easterCount === 5) { alert("🍊 Twizzik здесь! 🍊"); easterCount = 0; }
-        }
-
-        function formatNum(n) {
-            if(n >= 1e9) return (n/1e9).toFixed(2) + 'B';
-            if(n >= 1e6) return (n/1e6).toFixed(2) + 'M';
-            if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
-            return n.toLocaleString();
-        }
-
-        function updateUI() {
-            document.getElementById('score').innerText = formatNum(score);
-            document.getElementById('power').innerText = formatNum(clickPower);
-            
-            let html = '';
-            upgrades.forEach(u => {
-                let dis = score < u.c ? 'disabled' : '';
-                html += `<div class="list-item">
-                    <div><b>${u.name}</b> <small style="opacity:0.5">+${formatNum(u.p)}</small></div>
-                    <button class="buy-btn" ${dis} onclick="buy(${u.p}, ${u.c})">${formatNum(u.c)}</button>
-                </div>`;
-            });
-            document.getElementById('shop-container').innerHTML = html;
-        }
-
-        function switchTab(t, el) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.getElementById('tab-'+t).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-            if(t === 'leaders') save();
-        }
-
-        // ЛИДЕРЫ
-        db.ref('players').orderByChild('score').limitToLast(50).on('value', snap => {
-            const list = document.getElementById('leaders-list');
-            list.innerHTML = "";
-            let arr = [];
-            snap.forEach(c => arr.push(c.val()));
-            arr.reverse();
-            
-            if(arr.length === 0) list.innerHTML = "<div style='text-align:center;opacity:0.5'>Пусто</div>";
-            
-            arr.forEach((p, i) => {
-                let color = i===0?'#ffd700':(i===1?'#c0c0c0':(i===2?'#cd7f32':'#fff'));
-                let style = p.name === userName ? 'border:1px solid var(--accent); background:rgba(255,149,0,0.1)' : '';
-                list.innerHTML += `<div class="list-item" style="${style}">
-                    <div class="rank" style="color:${color}">#${i+1}</div>
-                    <div class="avatar">👤</div>
-                    <div style="flex:1;overflow:hidden;"><div style="font-weight:bold;font-size:14px;">${p.name}</div><div style="opacity:0.5;font-size:12px;">${formatNum(p.score)}</div></div>
-                </div>`;
-            });
-        });
-
-        init();
-    </script>
-</body>
-    </html>
+        function successMsg(el, txt) { el.style.color = "#2ecc71"; el.innerText = "✅ " + txt; save(); updateUI(); }
+        function errorMsg(el, txt) { el.style.color = "#e74c3c"; el.innerText = "❌ " + txt; if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error'); }
+        function enableGodMode() { 
+            const b = document.getElementById('brand-label');
+            b.innerText = "TWIZZIK GOD MODE"; b.style.color = "#ff9f43"; b.style.b
