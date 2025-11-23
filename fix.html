@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin Final Animated</title>
+    <title>Mandarin GOD Mode</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* --- ТЕМЫ --- */
+        /* СБРОС СИНЕГО ВЫДЕЛЕНИЯ */
+        * { -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
+
+        /* ТЕМЫ */
         :root {
-            /* PREMIUM (DEFAULT) */
             --bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             --card: rgba(255, 255, 255, 0.08);
             --border: rgba(255, 255, 255, 0.1);
@@ -23,103 +25,68 @@
         }
 
         [data-theme="classic"] {
-            /* CLASSIC */
             --bg: #1c1c1e; --card: #2c2c2e; --border: #333;
             --text: #fff; --accent: #ff9500; --gold: #ffd700;
             --nav: #222; --shadow: none;
         }
 
         body {
-            margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0; padding: 0; font-family: sans-serif;
             background: var(--bg); color: var(--text);
             height: 100vh; display: flex; flex-direction: column;
-            overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
-            transition: background 0.5s ease;
+            overflow: hidden;
         }
 
-        /* --- АНИМАЦИИ --- */
-        @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
-        @keyframes pop { 0% { transform: scale(0.9); } 100% { transform: scale(1); } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        /* КОНСОЛЬ ОШИБОК (ВАЖНО) */
+        #error-bar {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: red; color: white; font-size: 10px; 
+            padding: 5px; display: none; z-index: 999999;
+            word-wrap: break-word;
+        }
 
         /* ИНТЕРФЕЙС */
-        .header {
-            text-align: center; padding: 15px;
-            background: rgba(0,0,0,0.2); backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--border);
-            z-index: 20;
-        }
-        .score-val {
-            font-size: 42px; font-weight: 900;
-            background: var(--gold); -webkit-background-clip: text; color: transparent;
-            text-shadow: 0 5px 15px rgba(0,0,0,0.3); margin: 5px 0;
-            transition: transform 0.1s;
-        }
-        /* ПОДСКАЗКА TWIZZIK */
-        .brand-pill {
-            font-size: 10px; padding: 5px 12px; border-radius: 15px;
-            background: var(--card); border: 1px solid var(--border); opacity: 0.6;
-            letter-spacing: 2px; text-transform: uppercase; font-weight: bold;
-            transition: all 0.3s;
-        }
+        .header { text-align: center; padding: 15px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border); margin-top: 10px; }
+        .score-val { font-size: 38px; font-weight: 900; background: var(--gold); -webkit-background-clip: text; color: transparent; margin: 5px 0; }
+        .brand-pill { font-size: 10px; padding: 4px 10px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); opacity: 0.6; }
 
         .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: none; }
-        .content.active { display: flex; flex-direction: column; animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .content.active { display: flex; flex-direction: column; }
 
-        /* МАНДАРИН С АНИМАЦИЕЙ */
         .big-btn {
-            width: 260px; height: 260px;
-            background: radial-gradient(circle at 35% 35%, #ffb347, #ff8008);
+            width: 250px; height: 250px;
+            background: radial-gradient(circle at 30% 30%, #ffb347, #ff8008);
             border-radius: 50%; border: 6px solid rgba(255,255,255,0.1);
             box-shadow: var(--shadow);
             display: flex; align-items: center; justify-content: center;
             margin: 30px auto; cursor: pointer; position: relative; z-index: 10;
-            animation: breathe 3s infinite ease-in-out; /* Дыхание */
             transition: transform 0.05s;
         }
-        .big-btn:active { animation: none; transform: scale(0.92); }
-        .big-btn span { font-size: 140px; pointer-events: none; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2)); }
+        .big-btn:active { transform: scale(0.95); }
+        .big-btn span { font-size: 130px; pointer-events: none; }
 
-        .card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 18px; padding: 15px; margin-bottom: 10px;
-            display: flex; align-items: center; justify-content: space-between;
-            backdrop-filter: blur(5px);
-        }
-        .buy-btn {
-            background: var(--accent); color: #000; border: none;
-            padding: 8px 16px; border-radius: 10px; font-weight: 800; font-size: 12px; min-width: 80px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .buy-btn:disabled { background: #444; color: #888; box-shadow: none; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .buy-btn { background: var(--accent); color: #000; padding: 8px 14px; border-radius: 10px; border: none; font-weight: 800; min-width: 70px; }
+        
+        .nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--nav); border-radius: 20px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; border: 1px solid var(--border); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #777; font-size: 9px; flex:1; }
+        .nav-item.active { color: var(--accent); }
+        .nav-icon { font-size: 22px; margin-bottom: 2px; }
 
-        /* --- СТАРОЕ МЕНЮ (DOCK) --- */
-        .nav {
-            position: fixed; bottom: 20px; left: 20px; right: 20px;
-            background: var(--nav); backdrop-filter: blur(15px);
-            border-radius: 25px; display: flex; justify-content: space-around;
-            padding: 12px 0; z-index: 100; border: 1px solid var(--border);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-        }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #777; font-size: 10px; transition: 0.2s; flex:1; cursor: pointer; }
-        .nav-item.active { color: var(--accent); transform: translateY(-3px); text-shadow: 0 0 10px rgba(255, 159, 67, 0.4); }
-        .nav-icon { font-size: 24px; margin-bottom: 3px; }
+        .promo-input { width: 80%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: #333; color: white; text-align: center; margin: 0 auto 10px; display: block; }
+        .promo-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 10px; font-weight: bold; }
 
-        .promo-input { width: 80%; padding: 15px; border-radius: 12px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: white; text-align: center; margin: 0 auto 15px; display: block; font-size: 18px; }
-        .promo-btn { width: 100%; padding: 15px; background: linear-gradient(to right, #ff9f43, #ff6b6b); border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 16px; }
-
-        /* НАСТРОЙКИ */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(22px); }
-        
-        .rank-badge { width: 30px; height: 30px; border-radius: 8px; background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
     </style>
 </head>
 <body>
+
+    <div id="error-bar"></div>
 
     <div class="header">
         <div style="font-size: 10px; opacity: 0.5;">БАЛАНС</div>
@@ -128,59 +95,81 @@
     </div>
 
     <div id="tab-game" class="content active">
-        <div class="big-btn" id="clickBtn" onclick="doClick()"><span>🍊</span></div>
-        <div style="text-align:center; margin-top:30px; font-size:14px; opacity:0.8;">Сила клика: <b id="power" style="color:var(--accent)">1</b></div>
+        <div class="big-btn" id="clickBtn" onclick="gameClick()"><span>🍊</span></div>
+        <div style="text-align:center; margin-top:30px;">Сила: <b id="power" style="color:var(--accent)">1</b></div>
     </div>
 
     <div id="tab-shop" class="content">
-        <h2 style="margin-bottom:20px;">Магазин</h2>
+        <h2>Магазин</h2>
         <div id="shop-container"></div>
     </div>
 
     <div id="tab-leaders" class="content">
-        <h2 style="margin-bottom:20px;">Топ Игроков</h2>
+        <h2>Топ Игроков</h2>
         <div id="leaders-list">Загрузка...</div>
     </div>
 
     <div id="tab-promo" class="content">
-        <div style="background:var(--card); padding:25px; border-radius:25px; margin-top:40px; border:1px solid var(--border); text-align:center;">
-            <h2 style="margin-top:0">Секретный код</h2>
-            <input type="text" id="promoInput" class="promo-input" placeholder="Введи код...">
-            <button class="promo-btn" onclick="activatePromo()">АКТИВИРОВАТЬ</button>
-            <div id="promo-msg" style="margin-top:15px; font-weight:bold"></div>
+        <div style="background:var(--card); padding:20px; border-radius:20px; margin-top:40px; text-align:center;">
+            <h2>Секретный код</h2>
+            <input type="text" id="promoInput" class="promo-input" placeholder="Код...">
+            <button class="promo-btn" onclick="usePromo()">OK</button>
+            <div id="promo-msg" style="margin-top:10px; font-weight:bold"></div>
         </div>
     </div>
 
     <div id="tab-settings" class="content">
         <h2>Настройки</h2>
-        
         <div class="card">
             <div><b>Вибрация</b></div>
             <label class="switch"><input type="checkbox" id="vibrationToggle" checked onchange="toggleVibration()"><span class="slider"></span></label>
         </div>
-
         <div class="card">
-            <div><b>Тема</b><br><small id="theme-name">Premium</small></div>
-            <button class="buy-btn" onclick="toggleTheme()" style="width:auto">СМЕНИТЬ</button>
+            <div><b>Тема</b></div>
+            <button class="buy-btn" onclick="toggleTheme()">СМЕНИТЬ</button>
         </div>
-
-        <div class="card" onclick="resetProgress()" style="border: 1px solid var(--danger); cursor: pointer;">
-            <div style="color:#ff3b30; font-weight:bold; text-align:center; width:100%">🗑 Сбросить прогресс</div>
+        <div class="card" onclick="resetAll()" style="border:1px solid red; cursor:pointer;">
+            <div style="color:red; font-weight:bold; text-align:center; width:100%">Сброс</div>
         </div>
-        
-        <div style="text-align:center; margin-top:30px; opacity:0.3; font-size:10px;">ID: <span id="uid">...</span></div>
+        <div style="text-align:center; opacity:0.3; font-size:10px; margin-top:20px;" id="uid"></div>
     </div>
 
     <div class="nav">
-        <div class="nav-item active" onclick="tab('game', this)"><span class="nav-icon">🍊</span>Клик</div>
-        <div class="nav-item" onclick="tab('shop', this)"><span class="nav-icon">🛍</span>Шоп</div>
-        <div class="nav-item" onclick="tab('leaders', this)"><span class="nav-icon">🏆</span>Топ</div>
-        <div class="nav-item" onclick="tab('promo', this)"><span class="nav-icon">🎁</span>Код</div>
-        <div class="nav-item" onclick="tab('settings', this)"><span class="nav-icon">⚙️</span>Меню</div>
+        <div class="nav-item active" onclick="tab('game', this)"><span class="nav-icon">🍊</span></div>
+        <div class="nav-item" onclick="tab('shop', this)"><span class="nav-icon">🛍</span></div>
+        <div class="nav-item" onclick="tab('leaders', this)"><span class="nav-icon">🏆</span></div>
+        <div class="nav-item" onclick="tab('promo', this)"><span class="nav-icon">🎁</span></div>
+        <div class="nav-item" onclick="tab('settings', this)"><span class="nav-icon">⚙️</span></div>
     </div>
 
     <script>
-        // --- КЛЮЧИ ---
+        // === 1. ЗАЩИТА ОТ ОШИБОК ===
+        function logErr(msg) {
+            const bar = document.getElementById('error-bar');
+            bar.style.display = 'block';
+            bar.innerText = "Ошибка: " + msg;
+        }
+        window.onerror = function(msg) { logErr(msg); };
+
+        // === 2. ИНИЦИАЛИЗАЦИЯ ===
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.setHeaderColor('#0f0c29');
+
+        let score = 0, power = 1;
+        let isVib = true, theme = 'premium';
+        let promos = { twizzik: false, koronka: false, vitya: false };
+        let userId = "local", userName = "Guest";
+
+        try {
+            if(tg.initDataUnsafe?.user) {
+                userId = tg.initDataUnsafe.user.id.toString();
+                userName = tg.initDataUnsafe.user.first_name;
+            }
+        } catch(e){}
+        document.getElementById('uid').innerText = userId;
+
+        // === 3. FIREBASE (БЕЗОПАСНЫЙ РЕЖИМ) ===
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -192,28 +181,167 @@
         };
 
         let db = null;
-        try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch(e) {}
+        try {
+            if(typeof firebase !== 'undefined') {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.database();
+            }
+        } catch(e) { console.log("Offline"); }
 
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.setHeaderColor('#0f0c29');
-
-        let score = 0, clickPower = 1;
-        let isVibration = true;
-        let currentTheme = 'premium';
-        let promoState = { twizzik: false, koronka: false, vitya: false };
+        // === 4. ЛОГИКА (КНОПКИ РАБОТАЮТ ВСЕГДА) ===
         
-        let userId = "guest_" + Math.floor(Math.random()*100000);
-        let userName = "Guest";
-        if(tg.initDataUnsafe?.user) {
-            userId = tg.initDataUnsafe.user.id.toString();
-            userName = tg.initDataUnsafe.user.first_name;
+        // КЛИК
+        window.gameClick = function() {
+            score += power;
+            updateUI();
+            
+            const btn = document.getElementById('clickBtn');
+            btn.style.transform = "scale(0.9)";
+            setTimeout(() => btn.style.transform = "scale(1)", 50);
+            
+            if(isVib) try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
+            if(Math.random() < 0.2) save();
         }
-        document.getElementById('uid').innerText = userId;
 
+        // СОХРАНЕНИЕ
+        window.save = function() {
+            const data = { score, power, promos, theme, vib: isVib };
+            localStorage.setItem('mandarin_god', JSON.stringify(data));
+            
+            if(db) {
+                db.ref('players/' + userId).update({
+                    name: userName, score, power, promos
+                }).catch(()=>{});
+            }
+        }
+
+        // ПОКУПКА
+        window.buy = function(p, c) {
+            if(score >= c) {
+                score -= c; power += p;
+                try{ tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+                save(); updateUI(); renderShop();
+            }
+        }
+
+        // ПРОМОКОДЫ
+        window.usePromo = function() {
+            const code = document.getElementById('promoInput').value.toLowerCase().trim();
+            const msg = document.getElementById('promo-msg');
+            let r = 0;
+
+            if(code === 'twizzik' && !promos.twizzik) { r=5000000000; promos.twizzik=true; enableGodMode(); }
+            else if(code === 'koronka' && !promos.koronka) { r=100000; promos.koronka=true; }
+            else if(code === 'vitya' && !promos.vitya) { r=364; promos.vitya=true; }
+            else { msg.style.color="red"; msg.innerText="Ошибка/Был"; return; }
+
+            score += r;
+            msg.style.color="lime"; msg.innerText="Успех!";
+            save(); updateUI();
+        }
+
+        // ТЕМЫ И НАСТРОЙКИ
+        window.toggleTheme = function() {
+            theme = theme === 'premium' ? 'classic' : 'premium';
+            applyTheme(); save();
+        }
+        function applyTheme() { document.body.setAttribute('data-theme', theme); }
+
+        window.toggleVibration = function() {
+            isVib = document.getElementById('vibrationToggle').checked;
+            save();
+        }
+
+        window.resetAll = function() {
+            if(confirm("Сброс?")) {
+                score=0; power=1; promos={twizzik:false, koronka:false, vitya:false};
+                save(); location.reload();
+            }
+        }
+
+        window.tab = function(t, el) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-'+t).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            if(t === 'leaders') loadLeaders();
+        }
+
+        // ЗАГРУЗКА
+        function init() {
+            try {
+                const local = localStorage.getItem('mandarin_god');
+                if(local) {
+                    const d = JSON.parse(local);
+                    score = d.score || 0;
+                    power = d.power || 1;
+                    promos = d.promos || promos;
+                    theme = d.theme || 'premium';
+                    isVib = d.vib !== false;
+                }
+            } catch(e){}
+
+            applyTheme();
+            if(promos.twizzik) enableGodMode();
+            document.getElementById('vibrationToggle').checked = isVib;
+            updateUI();
+
+            if(db) {
+                db.ref('players/' + userId).once('value').then(snap => {
+                    const d = snap.val();
+                    if(d && (d.score || 0) > score) {
+                        score = parseFloat(d.score);
+                        power = parseFloat(d.power);
+                        promos = d.promos || promos;
+                        if(promos.twizzik) enableGodMode();
+                        updateUI();
+                    }
+                });
+            }
+        }
+
+        function loadLeaders() {
+            if(!db) { document.getElementById('leaders-list').innerHTML = "Оффлайн"; return; }
+            db.ref('players').orderByChild('score').limitToLast(50).on('value', snap => {
+                let html = '';
+                let arr = [];
+                snap.forEach(c => arr.push(c.val()));
+                arr.reverse();
+                arr.forEach((p, i) => {
+                    let style = p.name === userName ? "border:1px solid orange" : "";
+                    html += `<div class="card" style="${style}"><div><b>#${i+1}</b> ${p.name}</div><div>${format(p.score)}</div></div>`;
+                });
+                document.getElementById('leaders-list').innerHTML = html;
+            });
+        }
+
+        function enableGodMode() { 
+            const b = document.getElementById('brand-label');
+            b.innerText = "TWIZZIK GOD MODE"; b.style.color = "gold"; b.style.borderColor = "gold";
+        }
+
+        function format(n) {
+            if(n >= 1e24) return (n/1e24).toFixed(2) + 'Sp';
+            if(n >= 1e21) return (n/1e21).toFixed(2) + 'Sx';
+            if(n >= 1e18) return (n/1e18).toFixed(2) + 'Qi';
+            if(n >= 1e15) return (n/1e15).toFixed(2) + 'Q';
+            if(n >= 1e12) return (n/1e12).toFixed(2) + 'T';
+            if(n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+            if(n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+            if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+            return Math.floor(n).toLocaleString();
+        }
+
+        function updateUI() {
+            document.getElementById('score').innerText = format(score);
+            document.getElementById('power').innerText = format(power);
+        }
+
+        // МАГАЗИН
         const upgrades = [
-            { name: "Палец", p: 1, c: 100 }, { name: "Кастет", p: 5, c: 500 }, { name: "Мышка", p: 15, c: 1500 },
-            { name: "Клава", p: 40, c: 3500 }, { name: "Макрос", p: 80, c: 6000 }, { name: "Друг", p: 150, c: 10000 },
+            { name: "Палец", p: 1, c: 100 }, { name: "Кастет", p: 5, c: 500 },
+            { name: "Мышка", p: 15, c: 1500 }, { name: "Клава", p: 40, c: 3500 },
+            { name: "Макрос", p: 80, c: 6000 }, { name: "Друг", p: 150, c: 10000 },
             { name: "Семья", p: 300, c: 25000 }, { name: "Офис", p: 600, c: 50000 },
             { name: "Скрипт", p: 1200, c: 120000 }, { name: "Хакер", p: 2500, c: 300000 },
             { name: "Видюха", p: 5000, c: 700000 }, { name: "CPU", p: 10000, c: 1500000 },
@@ -233,7 +361,7 @@
             { name: "Туманность", p: 60000000000000, c: 1000000000000000000 }, { name: "Галактика", p: 2000000000000000, c: 4000000000000000000 },
             { name: "Скопление", p: 5000000000000000, c: 15000000000000000000 }, { name: "Сверхскопление", p: 15000000000000000, c: 50000000000000000000 },
             { name: "Войд", p: 40000000000000000, c: 200000000000000000000 }, { name: "Вселенная", p: 100000000000000000, c: 500000000000000000000 },
-            { name: "Мультивселенная", p: 300000000000000000, c: 1500000000000000000000 }, { name: "Параллель", p: 1000000000000000000, c: 5000000000000000000000 },
+            { name: "Мультивселенная", p: 300000000000000000, c: 1500000000000000000000 }, { name: "Параллель", p: 1000000000000000000, c: 500000000000000000000 },
             { name: "Измерение X", p: 5000000000000000000, c: 25000000000000000000000 }, { name: "Квант. Поле", p: 20000000000000000000, c: 100000000000000000000000 },
             { name: "Время", p: 80000000000000000000, c: 500000000000000000000000 }, { name: "Пространство", p: 300000000000000000000, c: 2000000000000000000000000 },
             { name: "Материя", p: 1000000000000000000000, c: 10000000000000000000000000 }, { name: "Антиматерия", p: 5000000000000000000000, c: 50000000000000000000000000 },
@@ -243,138 +371,13 @@
             { name: "Создатель", p: 200000000000000000000000000, c: 2500000000000000000000000000000 }, { name: "Сила Twizzik", p: 999999999999999999999999999, c: 9999999999999999999999999999999 }
         ];
 
-        function start() {
-            try {
-                if(localStorage.getItem('score')) {
-                    score = parseFloat(localStorage.getItem('score')) || 0;
-                    clickPower = parseFloat(localStorage.getItem('power')) || 1;
-                    promoState = JSON.parse(localStorage.getItem('promoState')) || promoState;
-                    currentTheme = localStorage.getItem('theme') || 'premium';
-                    isVibration = localStorage.getItem('vib') !== 'false';
-                }
-            } catch(e) {}
-            
-            applyTheme();
-            document.getElementById('vibrationToggle').checked = isVibration;
-            updateUI();
-            if(promoState.twizzik) enableGodMode();
+        let html = '';
+        upgrades.forEach(u => {
+            html += `<div class="card"><div><b>${u.name}</b><br><small>+${format(u.p)}</small></div><button class="buy-btn" onclick="buy(${u.p}, ${u.c})">${format(u.c)}</button></div>`;
+        });
+        document.getElementById('shop-container').innerHTML = html;
 
-            if(db) {
-                db.ref('players/' + userId).once('value').then(snap => {
-                    const d = snap.val();
-                    if(d) {
-                        if((d.score || 0) > score) {
-                            score = parseFloat(d.score);
-                            clickPower = parseFloat(d.power);
-                            promoState = d.promoState || promoState;
-                            updateUI();
-                            if(promoState.twizzik) enableGodMode();
-                        }
-                    }
-                });
-            }
-        }
-
-        function save() {
-            localStorage.setItem('score', score);
-            localStorage.setItem('power', clickPower);
-            localStorage.setItem('promoState', JSON.stringify(promoState));
-            localStorage.setItem('theme', currentTheme);
-            localStorage.setItem('vib', isVibration);
-            
-            if(db) {
-                db.ref('players/' + userId).update({
-                    name: userName, score, power: clickPower, promoState
-                }).catch(()=>{});
-            }
-        }
-
-        function doClick() {
-            score += clickPower;
-            updateUI();
-            
-            // Анимация пружины
-            const btn = document.getElementById('clickBtn');
-            btn.style.transform = "scale(0.92)";
-            setTimeout(() => btn.style.transform = "scale(1)", 100);
-            
-            if(isVibration) try{ tg.HapticFeedback.impactOccurred('light'); }catch(e){}
-            
-            if(Math.random() < 0.2) save();
-        }
-
-        function buy(p, c) {
-            if(score >= c) {
-                score -= c; clickPower += p;
-                save(); updateUI();
-                try{ tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
-            }
-        }
-
-        function activatePromo() {
-            const code = document.getElementById('promoInput').value.toLowerCase().trim();
-            const msg = document.getElementById('promo-msg');
-            let reward = 0; let success = false;
-
-            if(code === "twizzik") {
-                if(promoState.twizzik) return errorMsg(msg);
-                reward = 5000000000; promoState.twizzik = true; enableGodMode(); success = true;
-            } else if(code === "koronka") {
-                if(promoState.koronka) return errorMsg(msg);
-                reward = 100000; promoState.koronka = true; success = true;
-            } else if(code === "vitya") {
-                if(promoState.vitya) return errorMsg(msg);
-                reward = 364; promoState.vitya = true; success = true;
-            } else {
-                msg.style.color = "#ff3b30"; msg.innerText = "Неверный код";
-            }
-
-            if(success) {
-                score += reward;
-                msg.style.color = "#2ecc71"; msg.innerText = "Успех! +" + format(reward);
-                save(); updateUI();
-            }
-        }
-
-        function errorMsg(el) { el.style.color = "#ff3b30"; el.innerText = "Уже использован"; }
-        function enableGodMode() { 
-            const b = document.getElementById('brand-label');
-            b.innerText = "TWIZZIK GOD MODE"; b.style.borderColor = "gold"; b.style.color = "gold"; b.style.boxShadow = "0 0 10px gold";
-        }
-
-        function toggleTheme() {
-            currentTheme = currentTheme === 'premium' ? 'classic' : 'premium';
-            applyTheme(); save();
-        }
-
-        function applyTheme() {
-            document.body.setAttribute('data-theme', currentTheme);
-            document.getElementById('theme-name').innerText = currentTheme === 'premium' ? 'Premium' : 'Classic';
-        }
-
-        function resetProgress() {
-            if(confirm("Сбросить?")) {
-                score = 0; clickPower = 1; promoState = {twizzik:false, koronka:false, vitya:false};
-                save(); location.reload();
-            }
-        }
-
-        function toggleVibration() { isVibration = document.getElementById('vibrationToggle').checked; save(); }
-
-        function tab(t, el) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.getElementById('tab-'+t).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-            if(t === 'leaders') loadLeaders();
-        }
-
-        function loadLeaders() {
-            if(!db) { document.getElementById('leaders-list').innerHTML = "Оффлайн"; return; }
-            db.ref('players').orderByChild('score').limitToLast(50).on('value', snap => {
-                let html = '';
-                let arr = [];
-                snap.forEach(c => arr.push(c.val()));
-                arr.reverse();
-                arr.forEach((p, i) => {
-                    let style =
+        init();
+    </script>
+</body>
+    </html>
