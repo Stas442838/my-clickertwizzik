@@ -3,64 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin 14.0 Anti-Lag</title>
+    <title>Mandarin Unbreakable</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        :root {
-            --bg-color: #1c1c1e; --card-bg: #2c2c2e; --text-color: #ffffff;
-            --accent: #ff9500; --gold: #ffd700; --danger: #ff3b30; --input-bg: #3a3a3c;
-        }
-        body { margin: 0; padding: 0; font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-color); height: 100vh; display: flex; flex-direction: column; user-select: none; -webkit-tap-highlight-color: transparent; }
-        .header { text-align: center; padding: 15px; background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .score-value { font-size: 32px; font-weight: 800; color: var(--gold); text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
-        .brand-hint { font-size: 10px; opacity: 0.3; margin-top: 5px; letter-spacing: 2px; text-transform: uppercase; transition: color 0.3s; }
+        :root { --bg: #1c1c1e; --card: #2c2c2e; --text: #fff; --accent: #ff9500; --gold: #ffd700; --danger: #ff3b30; --input: #3a3a3c; }
+        body { margin: 0; padding: 0; font-family: sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; user-select: none; overflow: hidden; }
+        
+        /* ЭКРАН ЗАГРУЗКИ */
+        #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s; }
+        .loader { border: 4px solid #333; border-top: 4px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        /* ОСНОВНОЙ ИНТЕРФЕЙС */
+        .header { text-align: center; padding: 15px; background: rgba(44,44,46,0.9); border-bottom: 1px solid #333; }
+        .score-value { font-size: 36px; font-weight: 800; color: var(--gold); text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
         .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: none; }
         .content.active { display: flex; flex-direction: column; }
-        .big-button { width: 250px; height: 250px; background: radial-gradient(circle at 30% 30%, #ffb347, #ff8c00); border-radius: 50%; border: 6px solid #e67e22; box-shadow: 0 10px 40px rgba(255, 140, 0, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; transition: transform 0.05s; }
-        .big-button:active { transform: scale(0.95); }
-        .big-button span { font-size: 90px; pointer-events: none; }
-        .list-item, .leader-item { background: var(--card-bg); border-radius: 16px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
-        .leader-item { justify-content: flex-start; }
-        .buy-btn { background: var(--accent); color: #000; border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; min-width: 70px; text-align: center; }
-        .buy-btn:disabled { background: #444; color: #888; }
-        .rank { width: 30px; font-weight: bold; text-align: center; margin-right: 10px; }
-        .avatar { width: 30px; height: 30px; border-radius: 50%; background: #444; margin-right: 10px; display: flex; align-items: center; justify-content: center; }
-        .promo-input { width: 80%; padding: 15px; border-radius: 10px; border: none; background: var(--input-bg); color: white; font-size: 18px; text-align: center; margin: 0 auto 15px auto; display: block; }
-        .promo-btn { width: 100%; padding: 15px; background: var(--accent); color: black; font-weight: bold; font-size: 16px; border: none; border-radius: 10px; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(22px); }
-        .bottom-nav { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(44, 44, 46, 0.95); backdrop-filter: blur(20px); border-radius: 25px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 9px; transition: 0.2s; }
-        .nav-item.active { color: var(--accent); transform: scale(1.1); }
-        .nav-icon { font-size: 20px; margin-bottom: 2px; }
         
-        #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-color); z-index: 9999; display: flex; justify-content: center; align-items: center; color: var(--accent); font-weight: bold; font-size: 20px; flex-direction: column; }
-        #loading-text { margin-top: 10px; font-size: 14px; opacity: 0.7; color: white; font-weight: normal;}
+        .big-button { width: 240px; height: 240px; background: radial-gradient(circle, #ffb347, #ff8c00); border-radius: 50%; border: 5px solid #e67e22; box-shadow: 0 0 30px rgba(255,140,0,0.3); margin: 20px auto; display: flex; align-items: center; justify-content: center; font-size: 90px; cursor: pointer; transition: transform 0.05s; }
+        .big-button:active { transform: scale(0.95); }
+        
+        .list-item { background: var(--card); padding: 12px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .buy-btn { background: var(--accent); color: #000; border: none; padding: 8px 12px; border-radius: 8px; font-weight: bold; font-size: 12px; }
+        .buy-btn:disabled { background: #444; color: #888; }
+        
+        .promo-input { width: 80%; padding: 12px; border-radius: 8px; border: none; background: var(--input); color: #fff; text-align: center; margin: 0 auto 10px; display: block; font-size: 16px; }
+        .promo-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 8px; font-weight: bold; color: #000; }
+        
+        .bottom-nav { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(44,44,46,0.95); border-radius: 20px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; box-shadow: 0 5px 20px #000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; }
+        .nav-item.active { color: var(--accent); transform: scale(1.1); }
+        .nav-icon { font-size: 22px; margin-bottom: 2px; }
+        
+        /* ДЛЯ ЛИДЕРОВ */
+        .rank { width: 25px; font-weight: bold; text-align: center; margin-right: 10px; }
+        .avatar { width: 30px; height: 30px; background: #444; border-radius: 50%; margin-right: 10px; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
     <div id="loading-screen">
-        <div>Загрузка...</div>
-        <div id="loading-text">Подключение к серверу</div>
+        <div class="loader"></div>
+        <div style="font-weight:bold; margin-top:10px;">Запуск...</div>
+        <div id="error-log" style="color:red; font-size:10px; margin-top:20px; max-width:80%; text-align:center;"></div>
     </div>
 
     <div class="header">
-        <div style="font-size: 12px; opacity: 0.5;">БАЛАНС</div>
+        <div style="font-size: 10px; opacity: 0.5;">БАЛАНС</div>
         <div class="score-value" id="score">0</div>
-        <div class="brand-hint" id="brand-label">ONLINE • V 14.0</div>
+        <div style="font-size: 9px; opacity: 0.3; letter-spacing: 2px; margin-top:5px;" id="brand-label">NO BOTS • V 15.0</div>
     </div>
 
     <div id="tab-game" class="content active">
         <div class="big-button" id="clickBtn" onclick="doClick()"><span>🍊</span></div>
-        <div style="text-align: center; margin-top: 30px; opacity: 0.7;">Сила: +<span id="power" style="font-weight: bold; color: var(--accent);">1</span></div>
+        <div style="text-align: center; margin-top: 20px;">Сила: +<span id="power" style="color:var(--accent)">1</span></div>
     </div>
 
     <div id="tab-shop" class="content">
@@ -74,21 +73,18 @@
     </div>
 
     <div id="tab-promo" class="content">
-        <h2>Секретный код</h2>
-        <div style="text-align:center; margin-top: 50px;">
-            <input type="text" id="promoInput" class="promo-input" placeholder="Введи код...">
+        <h2>Промокод</h2>
+        <div style="text-align:center; margin-top:40px;">
+            <input type="text" id="promoInput" class="promo-input" placeholder="Введи код">
             <button class="promo-btn" onclick="activatePromo()">АКТИВИРОВАТЬ</button>
             <div id="promo-msg" style="margin-top:15px; font-weight:bold;"></div>
         </div>
     </div>
 
     <div id="tab-settings" class="content">
-        <h2>Настройки</h2>
-        <div class="list-item"><div><b>Вибрация</b></div><label class="switch"><input type="checkbox" id="vibrationToggle" checked onchange="toggleVibration()"><span class="slider"></span></label></div>
-        <div class="list-item" onclick="resetProgress()" style="justify-content: center; color: var(--danger); cursor: pointer; margin-top: 20px;"><b>🗑 Сброс всего</b></div>
-        <div style="text-align: center; margin-top: 30px; opacity: 0.3; font-size: 12px;" onclick="easterEgg()">
-            Version 14.0 • by Twizzik
-        </div>
+        <h2>Меню</h2>
+        <div class="list-item" onclick="resetProgress()" style="justify-content: center; color: var(--danger); cursor: pointer;"><b>🗑 Сбросить все</b></div>
+        <div style="text-align:center; margin-top:20px; opacity:0.3; font-size:10px;" onclick="easterEgg()">v15.0 by Twizzik</div>
     </div>
 
     <div class="bottom-nav">
@@ -100,6 +96,13 @@
     </div>
 
     <script>
+        // ГЛОБАЛЬНЫЙ ПЕРЕХВАТЧИК ОШИБОК (Чтобы видеть, почему висит)
+        window.onerror = function(msg, url, line) {
+            document.getElementById('error-log').innerText = "Ошибка: " + msg;
+            // Если ошибка есть - убираем загрузку через 2 сек, чтобы дать играть
+            setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 2000);
+        };
+
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -110,235 +113,197 @@
             appId: ""
         };
 
-        try { firebase.initializeApp(firebaseConfig); } catch(e) {}
+        // Инициализация
+        try { firebase.initializeApp(firebaseConfig); } catch(e) { console.error(e); }
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = 0;
-        let clickPower = 1;
-        let isVibrationEnabled = true;
-        let promoTwizzikUsed = false;
-        let promoKoronkaUsed = false;
-        let promoVityaUsed = false;
+        // Переменные
+        let score = 0, clickPower = 1;
+        let promoTwizzik = false, promoKoronka = false, promoVitya = false;
         let easterCount = 0;
-        
-        let userId = "guest_" + Math.floor(Math.random() * 100000);
+        let userId = "guest_" + Math.floor(Math.random()*10000);
         let userName = "Guest";
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+
+        if(tg.initDataUnsafe?.user) {
             userId = tg.initDataUnsafe.user.id.toString();
             userName = tg.initDataUnsafe.user.first_name;
         }
 
+        // ТОВАРЫ
         const upgrades = [
-            { name: "Палец", power: 1, cost: 100 },
-            { name: "Кастет", power: 5, cost: 500 },
-            { name: "Мышка", power: 15, cost: 1500 },
-            { name: "Клавиатура", power: 40, cost: 3500 },
-            { name: "Макросы", power: 80, cost: 6000 },
-            { name: "Друг", power: 150, cost: 10000 },
-            { name: "Семья", power: 300, cost: 25000 },
-            { name: "Офис", power: 600, cost: 50000 },
-            { name: "Скрипт", power: 1200, cost: 120000 },
-            { name: "Хакер", power: 2500, cost: 300000 },
-            { name: "Видеокарта", power: 5000, cost: 700000 },
-            { name: "Процессор", power: 10000, cost: 1500000 },
-            { name: "Сервер", power: 25000, cost: 4000000 },
-            { name: "Ботнет", power: 60000, cost: 10000000 },
-            { name: "Майнинг", power: 150000, cost: 25000000 },
-            { name: "Крипта", power: 350000, cost: 60000000 },
-            { name: "Нейросеть", power: 800000, cost: 150000000 },
-            { name: "Дата-центр", power: 2000000, cost: 400000000 },
-            { name: "ИИ", power: 5000000, cost: 1000000000 },
-            { name: "Стартап", power: 12000000, cost: 3000000000 },
-            { name: "Корпорация", power: 30000000, cost: 8000000000 },
-            { name: "Спутник", power: 75000000, cost: 20000000000 },
-            { name: "Ракета", power: 200000000, cost: 60000000000 },
-            { name: "SpaceX", power: 500000000, cost: 150000000000 },
-            { name: "Луна", power: 1200000000, cost: 400000000000 },
-            { name: "Марс", power: 3000000000, cost: 1000000000000 }, 
-            { name: "Колония", power: 8000000000, cost: 3000000000000 },
-            { name: "Планета", power: 20000000000, cost: 8000000000000 },
-            { name: "Звезда", power: 50000000000, cost: 25000000000000 },
-            { name: "Солнце", power: 120000000000, cost: 70000000000000 },
-            { name: "Черная Дыра", power: 300000000000, cost: 200000000000000 },
-            { name: "Сверхновая", power: 800000000000, cost: 600000000000000 },
-            { name: "Туманность", power: 2000000000000, cost: 2000000000000000 }, 
-            { name: "Галактика", power: 5000000000000, cost: 6000000000000000 },
-            { name: "Млечный Путь", power: 12000000000000, cost: 20000000000000000 },
-            { name: "Квазар", power: 30000000000000, cost: 80000000000000000 },
-            { name: "Вселенная", power: 80000000000000, cost: 250000000000000000 },
-            { name: "Мультивселенная", power: 200000000000000, cost: 750000000000000000 },
-            { name: "Параллель", power: 500000000000000, cost: 2500000000000000000 }, 
-            { name: "Измерение X", power: 1200000000000000, cost: 8000000000000000000 },
-            { name: "Квант. Поле", power: 3000000000000000, cost: 25000000000000000000 },
-            { name: "Время", power: 8000000000000000, cost: 80000000000000000000 },
-            { name: "Материя", power: 20000000000000000, cost: 250000000000000000000 },
-            { name: "Антиматерия", power: 50000000000000000, cost: 800000000000000000000 },
-            { name: "Пустота", power: 120000000000000000, cost: 3000000000000000000000 }, 
-            { name: "Матрица", power: 300000000000000000, cost: 10000000000000000000000 },
-            { name: "Перчатка Таноса", power: 800000000000000000, cost: 35000000000000000000000 },
-            { name: "Реальность", power: 2000000000000000000, cost: 100000000000000000000000 },
-            { name: "Создатель", power: 5000000000000000000, cost: 400000000000000000000000 },
-            { name: "Сила Twizzik", power: 9999999999999999999, cost: 999999999999999999999999 }
+            { name: "Палец", p: 1, c: 100 }, { name: "Мышка", p: 5, c: 500 },
+            { name: "Клавиатура", p: 15, c: 1500 }, { name: "Макросы", p: 40, c: 3500 },
+            { name: "Друг", p: 100, c: 7500 }, { name: "Семья", p: 300, c: 20000 },
+            { name: "Скрипт", p: 1000, c: 50000 }, { name: "Хакер", p: 2500, c: 150000 },
+            { name: "Ботнет", p: 6000, c: 500000 }, { name: "Ферма", p: 15000, c: 2000000 },
+            { name: "Сервер", p: 40000, c: 10000000 }, { name: "ИИ", p: 100000, c: 50000000 },
+            { name: "SpaceX", p: 500000, c: 200000000 }, { name: "Марс", p: 2000000, c: 1000000000 },
+            { name: "Галактика", p: 10000000, c: 10000000000 }, { name: "Сила Twizzik", p: 999999999, c: 99999999999 }
         ];
 
-        function initGame() {
-            // 🔥 СТРАХОВКА: Если интернет тупит 3 секунды - запускаем игру принудительно 🔥
-            const safetyTimer = setTimeout(() => {
+        // ЗАГРУЗКА ИГРЫ
+        function init() {
+            // АВАРИЙНЫЙ ТАЙМЕР: УБИРАЕТ ЭКРАН ЗАГРУЗКИ ЧЕРЕЗ 3 СЕК, ДАЖЕ ЕСЛИ ИНТЕРНЕТА НЕТ
+            setTimeout(() => {
                 document.getElementById('loading-screen').style.display = 'none';
-                console.log("Firebase slow, forcing start");
             }, 3000);
 
-            db.ref('players/' + userId).once('value').then((snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    score = parseFloat(data.score) || 0;
-                    clickPower = parseFloat(data.power) || 1;
-                    if(data.promoTwizzik) { promoTwizzikUsed = data.promoTwizzik; enableTwizzikMode(); }
-                    if(data.promoKoronka) promoKoronkaUsed = data.promoKoronka;
-                    if(data.promoVitya) promoVityaUsed = data.promoVitya;
+            db.ref('players/' + userId).once('value').then(snap => {
+                const d = snap.val();
+                if(d) {
+                    score = parseFloat(d.score) || 0;
+                    clickPower = parseFloat(d.power) || 1;
+                    if(d.promoTwizzik) { promoTwizzik = true; enableGodMode(); }
+                    promoKoronka = d.promoKoronka || false;
+                    promoVitya = d.promoVitya || false;
                 } else {
+                    // Если нет в облаке, пробуем локально
                     if(localStorage.getItem('score')) {
                         score = parseFloat(localStorage.getItem('score'));
                         clickPower = parseFloat(localStorage.getItem('power'));
-                        promoTwizzikUsed = localStorage.getItem('promo_twizzik_used') === 'true';
-                        if(promoTwizzikUsed) enableTwizzikMode();
-                        promoKoronkaUsed = localStorage.getItem('promo_koronka_used') === 'true';
-                        promoVityaUsed = localStorage.getItem('promo_vitya_used') === 'true';
+                        promoTwizzik = localStorage.getItem('promoTwizzik') === 'true';
+                        if(promoTwizzik) enableGodMode();
+                        promoKoronka = localStorage.getItem('promoKoronka') === 'true';
+                        promoVitya = localStorage.getItem('promoVitya') === 'true';
                     }
                 }
-                clearTimeout(safetyTimer); // Отменяем таймер, так как загрузка прошла успешно
+                // Успешно загрузились - убираем экран сразу
                 document.getElementById('loading-screen').style.display = 'none';
                 updateUI();
-            }).catch((error) => {
-                clearTimeout(safetyTimer);
-                document.getElementById('loading-screen').style.display = 'none';
+            }).catch(e => {
+                console.log(e); // Ошибка сети, сработает таймер
                 if(localStorage.getItem('score')) {
                     score = parseFloat(localStorage.getItem('score'));
                     clickPower = parseFloat(localStorage.getItem('power'));
                 }
                 updateUI();
             });
-            
-            if(localStorage.getItem('vibration')) isVibrationEnabled = localStorage.getItem('vibration') === 'true';
         }
 
-        function saveGame() {
+        function save() {
             localStorage.setItem('score', score);
             localStorage.setItem('power', clickPower);
-            localStorage.setItem('vibration', isVibrationEnabled);
-            localStorage.setItem('promo_twizzik_used', promoTwizzikUsed);
-            localStorage.setItem('promo_koronka_used', promoKoronkaUsed);
-            localStorage.setItem('promo_vitya_used', promoVityaUsed);
-        }
-
-        function saveToCloud() {
-            saveGame();
-            db.ref('players/' + userId).update({ 
-                name: userName, 
-                score: score,
-                power: clickPower,
-                promoTwizzik: promoTwizzikUsed,
-                promoKoronka: promoKoronkaUsed,
-                promoVitya: promoVityaUsed
+            localStorage.setItem('promoTwizzik', promoTwizzik);
+            localStorage.setItem('promoKoronka', promoKoronka);
+            localStorage.setItem('promoVitya', promoVitya);
+            
+            db.ref('players/' + userId).update({
+                name: userName, score: score, power: clickPower,
+                promoTwizzik: promoTwizzik, promoKoronka: promoKoronka, promoVitya: promoVitya
             });
         }
 
         function doClick() {
             score += clickPower;
-            if(isVibrationEnabled) tg.HapticFeedback.impactOccurred('light');
+            tg.HapticFeedback.impactOccurred('light');
             const btn = document.getElementById('clickBtn');
             btn.style.transform = "scale(0.95)";
             setTimeout(() => btn.style.transform = "scale(1)", 50);
             updateUI();
-            if(Math.random() < 0.1) saveToCloud();
+            if(Math.random() < 0.1) save();
         }
 
-        function buy(power, cost) {
-            if (score >= cost) {
-                score -= cost;
-                clickPower += power;
-                if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('success');
-                updateUI();
-                saveToCloud();
-            } else {
-                if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error');
+        function buy(p, c) {
+            if(score >= c) {
+                score -= c; clickPower += p;
+                tg.HapticFeedback.notificationOccurred('success');
+                save(); updateUI();
             }
         }
 
         function activatePromo() {
-            const input = document.getElementById('promoInput');
+            const code = document.getElementById('promoInput').value.toLowerCase().trim();
             const msg = document.getElementById('promo-msg');
-            const code = input.value.trim().toLowerCase();
-
-            if (code === "twizzik") {
-                if (promoTwizzikUsed) errorPromo(msg, "Уже использован!");
-                else { score += 5000000000; promoTwizzikUsed = true; enableTwizzikMode(); successPromo(msg, "+5 МЛРД! (Mode ON)"); }
-            } 
-            else if (code === "koronka") {
-                if (promoKoronkaUsed) errorPromo(msg, "Уже использован!");
-                else { score += 100000; promoKoronkaUsed = true; successPromo(msg, "+100,000 МОНЕТ!"); }
-            } 
-            else if (code === "vitya") {
-                if (promoVityaUsed) errorPromo(msg, "Уже использован!");
-                else { score += 364; promoVityaUsed = true; successPromo(msg, "+364 МОНЕТЫ!"); }
+            
+            if(code === "twizzik") {
+                if(promoTwizzik) errorMsg(msg, "Уже активирован");
+                else { score+=5000000000; promoTwizzik=true; enableGodMode(); successMsg(msg, "+5 МЛРД"); }
+            } else if(code === "koronka") {
+                if(promoKoronka) errorMsg(msg, "Уже активирован");
+                else { score+=100000; promoKoronka=true; successMsg(msg, "+100K"); }
+            } else if(code === "vitya") {
+                if(promoVitya) errorMsg(msg, "Уже активирован");
+                else { score+=364; promoVitya=true; successMsg(msg, "+364"); }
+            } else {
+                errorMsg(msg, "Неверный код");
             }
-            else errorPromo(msg, "Неверный код");
         }
 
-        function successPromo(el, txt) { saveToCloud(); updateUI(); el.style.color = "var(--accent)"; el.innerText = "✅ " + txt; if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('success'); }
-        function errorPromo(el, txt) { el.style.color = "var(--danger)"; el.innerText = "❌ " + txt; if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error'); }
+        function successMsg(el, txt) { el.style.color = "var(--accent)"; el.innerText = "✅ " + txt; save(); updateUI(); }
+        function errorMsg(el, txt) { el.style.color = "var(--danger)"; el.innerText = "❌ " + txt; tg.HapticFeedback.notificationOccurred('error'); }
 
-        function enableTwizzikMode() {
-            document.getElementById('brand-label').innerText = "TWIZZIK • GOD MODE";
+        function enableGodMode() {
+            document.getElementById('brand-label').innerText = "TWIZZIK GOD MODE";
             document.getElementById('brand-label').style.color = "#ff9500";
-            document.getElementById('brand-label').style.fontWeight = "bold";
+        }
+
+        function resetProgress() {
+            if(confirm("Сбросить всё?")) {
+                score = 0; clickPower = 1;
+                promoTwizzik = false; promoKoronka = false; promoVitya = false;
+                save(); location.reload();
+            }
         }
 
         function easterEgg() {
             easterCount++;
-            if(easterCount === 5) { alert("🍊 Twizzik следит за тобой! 🍊"); easterCount = 0; }
+            if(easterCount === 5) { alert("🍊 Twizzik здесь! 🍊"); easterCount = 0; }
         }
 
-        function resetProgress() {
-            if(confirm("Удалить всё?")) {
-                score = 0; clickPower = 1;
-                promoTwizzikUsed = false; promoKoronkaUsed = false; promoVityaUsed = false;
-                saveToCloud(); updateUI(); window.location.reload();
-            }
-        }
-
-        function toggleVibration() { isVibrationEnabled = document.getElementById('vibrationToggle').checked; saveGame(); }
-
-        function switchTab(tab, el) {
-            document.querySelectorAll('.content').forEach(e => e.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
-            el.classList.add('active');
-            if(tab === 'leaders') saveToCloud();
-        }
-
-        function formatNumber(num) {
-            if (num >= 1e21) return (num / 1e21).toFixed(2) + 'Sx';
-            if (num >= 1e18) return (num / 1e18).toFixed(2) + 'Qi';
-            if (num >= 1e15) return (num / 1e15).toFixed(2) + 'Q';
-            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
-            if (num >= 1e9)  return (num / 1e9).toFixed(2) + 'B';
-            if (num >= 1e6)  return (num / 1e6).toFixed(2) + 'M';
-            if (num >= 1e3)  return (num / 1e3).toFixed(1) + 'K';
-            return num.toLocaleString();
+        function formatNum(n) {
+            if(n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+            if(n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+            if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+            return n.toLocaleString();
         }
 
         function updateUI() {
-            document.getElementById('score').innerText = formatNumber(score);
-            document.getElementById('power').innerText = formatNumber(clickPower);
+            document.getElementById('score').innerText = formatNum(score);
+            document.getElementById('power').innerText = formatNum(clickPower);
+            
             let html = '';
             upgrades.forEach(u => {
-                let dis = score < u.cost ? 'disabled' : '';
-                html += `<div class="list-item"><div><b>${u.name}</b> <small style="opacity:0.6">+${formatNumber(u.power)}</small></div><button class="buy-btn" ${dis} onclick="buy(${u.power}, ${u.cost})">${formatNumber(u.cost)}</button></div>`;
+                let dis = score < u.c ? 'disabled' : '';
+                html += `<div class="list-item">
+                    <div><b>${u.name}</b> <small style="opacity:0.5">+${formatNum(u.p)}</small></div>
+                    <button class="buy-btn" ${dis} onclick="buy(${u.p}, ${u.c})">${formatNum(u.c)}</button>
+                </div>`;
             });
             document.getElementById('shop-container').innerHTML = html;
         }
 
-        db.ref('players').orderByChild('score').limitToLast(100).on('v
+        function switchTab(t, el) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-'+t).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            if(t === 'leaders') save();
+        }
+
+        // ЛИДЕРЫ
+        db.ref('players').orderByChild('score').limitToLast(50).on('value', snap => {
+            const list = document.getElementById('leaders-list');
+            list.innerHTML = "";
+            let arr = [];
+            snap.forEach(c => arr.push(c.val()));
+            arr.reverse();
+            
+            if(arr.length === 0) list.innerHTML = "<div style='text-align:center;opacity:0.5'>Пусто</div>";
+            
+            arr.forEach((p, i) => {
+                let color = i===0?'#ffd700':(i===1?'#c0c0c0':(i===2?'#cd7f32':'#fff'));
+                let style = p.name === userName ? 'border:1px solid var(--accent); background:rgba(255,149,0,0.1)' : '';
+                list.innerHTML += `<div class="list-item" style="${style}">
+                    <div class="rank" style="color:${color}">#${i+1}</div>
+                    <div class="avatar">👤</div>
+                    <div style="flex:1;overflow:hidden;"><div style="font-weight:bold;font-size:14px;">${p.name}</div><div style="opacity:0.5;font-size:12px;">${formatNum(p.score)}</div></div>
+                </div>`;
+            });
+        });
+
+        init();
+    </script>
+</body>
+    </html>
