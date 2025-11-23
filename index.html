@@ -3,73 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin v23 Ultimate</title>
+    <title>Mandarin v24 Final</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* --- НАСТРОЙКИ ТЕМ --- */
+        /* ПРЕМИУМ ДИЗАЙН */
         :root {
-            /* PREMIUM (По умолчанию) */
             --bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            --card: rgba(255, 255, 255, 0.08);
+            --glass: rgba(255, 255, 255, 0.08);
             --border: rgba(255, 255, 255, 0.1);
             --text: #ffffff;
             --accent: #ff9f43;
             --gold: linear-gradient(to bottom, #f1c40f, #f39c12);
             --nav: rgba(20, 20, 30, 0.95);
-            --shadow: 0 0 20px rgba(255, 159, 67, 0.6);
-            --btn-shadow: inset 0 0 20px rgba(255,255,255,0.3), 0 10px 40px rgba(255, 128, 8, 0.4);
         }
 
-        /* CLASSIC (Старый стиль) */
+        /* ТЕМА CLASSIC */
         [data-theme="classic"] {
-            --bg: #1c1c1e;
-            --card: #2c2c2e;
-            --border: #333;
-            --text: #ffffff;
-            --accent: #ff9500;
-            --gold: #ffd700;
-            --nav: #222;
-            --shadow: none;
-            --btn-shadow: 0 0 30px rgba(255, 149, 0, 0.2);
+            --bg: #1c1c1e; --glass: #2c2c2e; --border: #333;
+            --text: #fff; --accent: #ff9500; --gold: #ffd700; --nav: #222;
         }
 
         body {
-            margin: 0; padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0; padding: 0; font-family: sans-serif;
             background: var(--bg); color: var(--text);
             height: 100vh; display: flex; flex-direction: column;
             overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
-            transition: background 0.5s;
         }
 
-        /* --- ЗАЩИТА ОТ ЗАВИСАНИЯ (CSS) --- */
-        /* Этот экран исчезнет сам через 4 секунды, даже если скрипт сломается */
-        #loading-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 9999;
-            display: flex; justify-content: center; align-items: center; flex-direction: column;
-            animation: autoHide 0.5s ease-in-out 4s forwards; /* МАГИЯ */
-            pointer-events: all;
-        }
-        #loading-screen.loaded { display: none !important; animation: none; }
-
-        @keyframes autoHide {
-            0% { opacity: 1; }
-            99% { opacity: 0; pointer-events: none; }
-            100% { opacity: 0; visibility: hidden; pointer-events: none; }
+        /* --- ЛОГИ (Для проверки ошибок) --- */
+        #debug-log {
+            position: fixed; top: 0; left: 0; width: 100%; 
+            background: rgba(0,0,0,0.5); color: lime; font-size: 8px; 
+            pointer-events: none; z-index: 99999; display: none;
         }
 
-        .spinner {
-            width: 40px; height: 40px; border: 4px solid #333;
-            border-top: 4px solid var(--accent); border-radius: 50%;
-            animation: spin 1s linear infinite; margin-bottom: 15px;
-        }
-        @keyframes spin { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
-
-        /* --- ИНТЕРФЕЙС --- */
         .header {
             text-align: center; padding: 15px;
             background: rgba(0,0,0,0.2); backdrop-filter: blur(10px);
@@ -82,27 +52,25 @@
         }
         .brand-pill {
             font-size: 10px; padding: 4px 10px; border-radius: 10px;
-            background: var(--card); border: 1px solid var(--border); opacity: 0.7; letter-spacing: 1px;
+            background: var(--glass); border: 1px solid var(--border); opacity: 0.7;
         }
 
         .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: none; }
-        .content.active { display: flex; flex-direction: column; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from {opacity:0; transform: translateY(10px);} to {opacity:1; transform: translateY(0);} }
+        .content.active { display: flex; flex-direction: column; }
 
         .big-btn {
             width: 250px; height: 250px;
             background: radial-gradient(circle at 35% 35%, #ffb347, #ff8008);
             border-radius: 50%; border: 5px solid rgba(255,255,255,0.1);
-            box-shadow: var(--btn-shadow);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.3), 0 10px 40px rgba(255, 128, 8, 0.4);
             display: flex; align-items: center; justify-content: center;
             margin: 20px auto; cursor: pointer; position: relative;
-            transition: transform 0.05s;
         }
         .big-btn:active { transform: scale(0.95); }
-        .big-btn span { font-size: 130px; pointer-events: none; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2)); }
+        .big-btn span { font-size: 130px; pointer-events: none; }
 
         .card {
-            background: var(--card); border: 1px solid var(--border);
+            background: var(--glass); border: 1px solid var(--border);
             border-radius: 16px; padding: 15px; margin-bottom: 10px;
             display: flex; align-items: center; justify-content: space-between;
         }
@@ -124,29 +92,23 @@
         .nav-icon { font-size: 22px; margin-bottom: 2px; }
 
         .promo-input { width: 80%; padding: 12px; border-radius: 10px; border: none; background: #333; color: white; text-align: center; margin: 0 auto 10px; display: block; font-size: 16px; border: 1px solid var(--border); }
-        .promo-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 10px; font-weight: bold; color: #000; }
+        .promo-btn { width: 100%; padding: 12px; background: linear-gradient(to right, #ff9f43, #ff6b6b); border: none; border-radius: 12px; color: white; font-weight: bold; font-size: 16px; }
 
-        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent); }
-        input:checked + .slider:before { transform: translateX(22px); }
-        
-        .rank-badge { width: 30px; height: 30px; border-radius: 8px; background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+        /* СТИЛЬ ОШИБОК ВНИЗУ */
+        #status-bar {
+            position: fixed; bottom: 80px; width: 100%; text-align: center;
+            font-size: 10px; color: rgba(255,255,255,0.3); pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-    <div id="loading-screen">
-        <div class="spinner"></div>
-        <div style="color:white; font-weight:bold;">ЗАПУСК...</div>
-    </div>
+    <div id="debug-log"></div>
 
     <div class="header">
         <div style="font-size: 10px; opacity: 0.5;">БАЛАНС</div>
         <div class="score-val" id="score">0</div>
-        <div class="brand-pill" id="brand-label">V 23.0</div>
+        <div class="brand-pill" id="brand-label">V 24.0 NO-LAG</div>
     </div>
 
     <div id="tab-game" class="content active">
@@ -155,7 +117,7 @@
     </div>
 
     <div id="tab-shop" class="content">
-        <h2>Магазин (60 ур.)</h2>
+        <h2>Магазин</h2>
         <div id="shop-container"></div>
     </div>
 
@@ -175,23 +137,17 @@
 
     <div id="tab-settings" class="content">
         <h2>Настройки</h2>
-        
         <div class="card">
-            <div><b>Вибрация</b></div>
-            <label class="switch"><input type="checkbox" id="vibrationToggle" checked onchange="toggleVibration()"><span class="slider"></span></label>
-        </div>
-
-        <div class="card">
-            <div><b>Тема</b><br><small id="theme-name" style="opacity:0.5">Premium</small></div>
+            <div><b>Тема</b><br><small id="theme-name">Premium</small></div>
             <button class="buy-btn" onclick="toggleTheme()" style="width:auto;">СМЕНИТЬ</button>
         </div>
-
-        <div class="card" onclick="resetProgress()" style="border: 1px solid var(--danger); cursor: pointer;">
-            <div style="color: var(--danger); font-weight: bold; text-align: center; width:100%;">🗑 Сбросить прогресс</div>
+        <div class="card" onclick="resetProgress()" style="border: 1px solid #ff3b30; cursor: pointer;">
+            <div style="color: #ff3b30; font-weight: bold; text-align: center; width:100%;">🗑 Сбросить все</div>
         </div>
-
         <div style="text-align: center; margin-top: 30px; opacity: 0.3; font-size: 10px;">ID: <span id="user-id-display">...</span></div>
     </div>
+
+    <div id="status-bar">System Ready</div>
 
     <div class="nav">
         <div class="nav-item active" onclick="tab('game', this)"><span class="nav-icon">🍊</span>Клик</div>
@@ -202,9 +158,37 @@
     </div>
 
     <script>
-        // СНИМАЕМ ЗАГРУЗКУ ЧЕРЕЗ 1 СЕК (ЧТО БЫ НИ СЛУЧИЛОСЬ)
-        setTimeout(() => { document.getElementById('loading-screen').classList.add('loaded'); }, 1000);
+        // === ЖУРНАЛ ОШИБОК ===
+        function log(msg) {
+            console.log(msg);
+            // Если ошибка критическая, покажем её на экране
+            if(msg.toLowerCase().includes("error")) {
+                document.getElementById('status-bar').innerText = msg;
+                document.getElementById('status-bar').style.color = "red";
+            }
+        }
+        window.onerror = function(msg) { log("JS Error: " + msg); };
 
+        // === ПЕРЕМЕННЫЕ ===
+        let score = 0, clickPower = 1;
+        let promoTwizzik = false, promoKoronka = false, promoVitya = false;
+        let currentTheme = 'premium';
+        
+        let userId = "guest_" + Math.floor(Math.random()*100000);
+        let userName = "Guest";
+
+        // === ИНИЦИАЛИЗАЦИЯ ===
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.setHeaderColor('#0f0c29');
+
+        if (tg.initDataUnsafe?.user) {
+            userId = tg.initDataUnsafe.user.id.toString();
+            userName = tg.initDataUnsafe.user.first_name;
+        }
+        document.getElementById('user-id-display').innerText = userId;
+
+        // FIREBASE (С ЗАЩИТОЙ ОТ СБОЯ)
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -215,26 +199,16 @@
             appId: ""
         };
 
-        try { firebase.initializeApp(firebaseConfig); } catch(e) {}
-        const db = firebase.database();
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.setHeaderColor('#0f0c29');
-
-        let score = 0, clickPower = 1;
-        let isVibrationEnabled = true;
-        let currentTheme = 'premium';
-        let promoTwizzik = false, promoKoronka = false, promoVitya = false;
-        
-        let userId = "guest_" + Math.floor(Math.random()*100000);
-        let userName = "Guest";
-        if (tg.initDataUnsafe?.user) {
-            userId = tg.initDataUnsafe.user.id.toString();
-            userName = tg.initDataUnsafe.user.first_name;
+        let db = null;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            log("Firebase Connected");
+        } catch(e) {
+            log("Firebase Error: " + e.message);
         }
-        document.getElementById('user-id-display').innerText = userId;
 
-        // 60 УЛУЧШЕНИЙ
+        // УЛУЧШЕНИЯ
         const upgrades = [
             { name: "Палец", p: 1, c: 100 }, { name: "Кастет", p: 5, c: 500 }, { name: "Мышка", p: 15, c: 1500 },
             { name: "Клава", p: 40, c: 3500 }, { name: "Макрос", p: 80, c: 6000 }, { name: "Друг", p: 150, c: 10000 },
@@ -254,37 +228,46 @@
             { name: "Параллель", p: 1000000000000000000, c: 5000000000000000000000 }, { name: "Измерение X", p: 5000000000000000000, c: 25000000000000000000000 }, { name: "Квант. Поле", p: 20000000000000000000, c: 100000000000000000000000 },
             { name: "Время", p: 80000000000000000000, c: 500000000000000000000000 }, { name: "Пространство", p: 300000000000000000000, c: 2000000000000000000000000 }, { name: "Материя", p: 1000000000000000000000, c: 10000000000000000000000000 },
             { name: "Антиматерия", p: 5000000000000000000000, c: 50000000000000000000000000 }, { name: "Энергия", p: 20000000000000000000000, c: 200000000000000000000000000 }, { name: "Пустота", p: 100000000000000000000000, c: 1000000000000000000000000000 },
-            { name: "Сингулярность", p: 500000000000000000000000, c: 5000000000000000000000000000 }, { name: "Матрица", p: 2000000000000000000000000, c: 25000000000000000000000000000 }, { name: "Перчатка Таноса", p: 10000000000000000000000000, c: 100000000000000000000000000000 },
-            { name: "Реальность", p: 50000000000000000000000000, c: 500000000000000000000000000000 }, { name: "Создатель", p: 200000000000000000000000000, c: 2500000000000000000000000000000 }, { name: "Сила Twizzik", p: 999999999999999999999999999, c: 9999999999999999999999999999999 }
+            { name: "Сингулярность", p: 500000000000000000000000, c: 5000000000000000000000000000 }, { name: "Матрица", p: 2000000000000000000000000, c: 25000000000000000000000000000 }, { name: "Перчатка Таноса", p: 800000000000000000, c: 35000000000000000000000 },
+            { name: "Реальность", p: 2000000000000000000, c: 100000000000000000000000 }, { name: "Создатель", p: 5000000000000000000, c: 400000000000000000000000 }, { name: "Сила Twizzik", p: 9999999999999999999, c: 999999999999999999999999 }
         ];
 
+        // --- ЗАПУСК ---
         function start() {
-            if(localStorage.getItem('score')) {
-                score = parseFloat(localStorage.getItem('score'));
-                clickPower = parseFloat(localStorage.getItem('power'));
-                promoTwizzik = localStorage.getItem('pt') === 'true';
-                promoKoronka = localStorage.getItem('pk') === 'true';
-                promoVitya = localStorage.getItem('pv') === 'true';
-                currentTheme = localStorage.getItem('theme') || 'premium';
-            }
+            // 1. Грузим из LocalStorage (моментально)
+            try {
+                if(localStorage.getItem('score')) {
+                    score = parseFloat(localStorage.getItem('score')) || 0;
+                    clickPower = parseFloat(localStorage.getItem('power')) || 1;
+                    promoTwizzik = localStorage.getItem('pt') === 'true';
+                    promoKoronka = localStorage.getItem('pk') === 'true';
+                    promoVitya = localStorage.getItem('pv') === 'true';
+                    currentTheme = localStorage.getItem('theme') || 'premium';
+                }
+            } catch(e) { log("LS Error: " + e.message); }
+            
             applyTheme();
             if(promoTwizzik) enableGodMode();
             updateUI();
 
-            db.ref('players/' + userId).once('value').then(snap => {
-                const d = snap.val();
-                if(d) {
-                    score = parseFloat(d.score) || score;
-                    clickPower = parseFloat(d.power) || clickPower;
-                    promoTwizzik = d.promoTwizzik || promoTwizzik;
-                    promoKoronka = d.promoKoronka || promoKoronka;
-                    promoVitya = d.promoVitya || promoVitya;
-                    if(promoTwizzik) enableGodMode();
-                    updateUI();
-                }
-            });
+            // 2. Грузим из Firebase (если работает)
+            if(db) {
+                db.ref('players/' + userId).once('value').then(snap => {
+                    const d = snap.val();
+                    if(d) {
+                        score = parseFloat(d.score) || score;
+                        clickPower = parseFloat(d.power) || clickPower;
+                        promoTwizzik = d.promoTwizzik || promoTwizzik;
+                        promoKoronka = d.promoKoronka || promoKoronka;
+                        promoVitya = d.promoVitya || promoVitya;
+                        if(promoTwizzik) enableGodMode();
+                        updateUI();
+                    }
+                }).catch(e => log("DB Load Fail: " + e.message));
+            }
         }
 
+        // --- ФУНКЦИИ ---
         function save() {
             localStorage.setItem('score', score);
             localStorage.setItem('power', clickPower);
@@ -292,20 +275,23 @@
             localStorage.setItem('pk', promoKoronka);
             localStorage.setItem('pv', promoVitya);
             localStorage.setItem('theme', currentTheme);
-            db.ref('players/' + userId).update({
-                name: userName, score: score, power: clickPower,
-                promoTwizzik, promoKoronka, promoVitya
-            });
+            
+            if(db) {
+                db.ref('players/' + userId).update({
+                    name: userName, score: score, power: clickPower,
+                    promoTwizzik, promoKoronka, promoVitya
+                }).catch(()=>{});
+            }
         }
 
         function doClick() {
             score += clickPower;
-            if (isVibrationEnabled) tg.HapticFeedback.impactOccurred('light');
+            tg.HapticFeedback.impactOccurred('light');
             const btn = document.getElementById('clickBtn');
             btn.style.transform = "scale(0.95)";
             setTimeout(() => btn.style.transform = "scale(1)", 50);
             updateUI();
-            if(Math.random() < 0.1) save();
+            if(Math.random() < 0.2) save();
         }
 
         function buy(p, c) {
@@ -322,16 +308,16 @@
             let reward = 0; let success = false;
 
             if(code === "twizzik") {
-                if(promoTwizzik) return errorMsg(msg, "Уже был");
+                if(promoTwizzik) return errorMsg(msg);
                 reward = 5000000000; promoTwizzik = true; enableGodMode(); success = true;
             } else if(code === "koronka") {
-                if(promoKoronka) return errorMsg(msg, "Уже был");
+                if(promoKoronka) return errorMsg(msg);
                 reward = 100000; promoKoronka = true; success = true;
             } else if(code === "vitya") {
-                if(promoVitya) return errorMsg(msg, "Уже был");
+                if(promoVitya) return errorMsg(msg);
                 reward = 364; promoVitya = true; success = true;
             } else {
-                errorMsg(msg, "Неверный код");
+                msg.style.color = "red"; msg.innerText = "Неверный код";
             }
 
             if(success) {
@@ -341,10 +327,12 @@
             }
         }
 
-        function errorMsg(el, txt) { el.style.color = "#e74c3c"; el.innerText = "❌ " + txt; }
-        function enableGodMode() { document.getElementById('brand-label').innerText = "TWIZZIK GOD MODE"; document.getElementById('brand-label').style.borderColor = "var(--accent)"; }
+        function errorMsg(el) { el.style.color = "#e74c3c"; el.innerText = "Уже использован"; }
+        function enableGodMode() { 
+            const b = document.getElementById('brand-label');
+            b.innerText = "TWIZZIK GOD MODE"; b.style.border = "1px solid #ff9f43"; b.style.color = "#ff9f43";
+        }
 
-        // --- СМЕНА ТЕМЫ ---
         function toggleTheme() {
             currentTheme = currentTheme === 'premium' ? 'classic' : 'premium';
             applyTheme(); save();
@@ -356,13 +344,11 @@
         }
 
         function resetProgress() {
-            if(confirm("Удалить весь прогресс?")) {
+            if(confirm("Сбросить всё?")) {
                 score = 0; clickPower = 1; promoTwizzik = false; promoKoronka = false; promoVitya = false;
                 save(); location.reload();
             }
         }
-
-        function toggleVibration() { isVibrationEnabled = document.getElementById('vibrationToggle').checked; }
 
         function tab(t, el) {
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -373,4 +359,35 @@
         }
 
         function loadLeaders() {
-            db.ref('players').orderByChild('score').limitToLa
+            if(!db) { document.getElementById('leaders-list').innerHTML = "Нет соединения"; return; }
+            db.ref('players').orderByChild('score').limitToLast(50).on('value', snap => {
+                let html = '';
+                let arr = [];
+                snap.forEach(c => arr.push(c.val()));
+                arr.reverse();
+                arr.forEach((p, i) => {
+                    let style = p.name === userName ? "border:1px solid var(--accent); background:rgba(255,159,67,0.1)" : "";
+                    html += `<div class="card" style="${style}"><div style="display:flex;align-items:center;"><div class="rank-badge">#${i+1}</div><b>${p.name}</b></div><div>${format(p.score)}</div></div>`;
+                });
+                document.getElementById('leaders-list').innerHTML = html;
+            });
+        }
+
+        function format(n) {
+            if (n >= 1e24) return (n/1e24).toFixed(2) + 'Sp';
+            if (n >= 1e21) return (n/1e21).toFixed(2) + 'Sx'; 
+            if (n >= 1e18) return (n/1e18).toFixed(2) + 'Qi'; 
+            if (n >= 1e15) return (n/1e15).toFixed(2) + 'Q';
+            if (n >= 1e12) return (n/1e12).toFixed(2) + 'T';
+            if (n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+            if (n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+            if (n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+            return Math.floor(n).toLocaleString();
+        }
+
+        function updateUI() {
+            document.getElementById('score').innerText = format(score);
+            document.getElementById('power').innerText = format(clickPower);
+            let html = '';
+            upgrades.forEach(u => {
+                let dis = score
