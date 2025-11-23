@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin v20 Nuclear</title>
+    <title>Mandarin v23 Ultimate</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* --- CSS ПЕРЕМЕННЫЕ --- */
+        /* --- НАСТРОЙКИ ТЕМ --- */
         :root {
+            /* PREMIUM (По умолчанию) */
             --bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             --card: rgba(255, 255, 255, 0.08);
             --border: rgba(255, 255, 255, 0.1);
@@ -19,13 +20,20 @@
             --gold: linear-gradient(to bottom, #f1c40f, #f39c12);
             --nav: rgba(20, 20, 30, 0.95);
             --shadow: 0 0 20px rgba(255, 159, 67, 0.6);
+            --btn-shadow: inset 0 0 20px rgba(255,255,255,0.3), 0 10px 40px rgba(255, 128, 8, 0.4);
         }
 
-        /* ТЕМА: CLASSIC */
+        /* CLASSIC (Старый стиль) */
         [data-theme="classic"] {
-            --bg: #1c1c1e; --card: #2c2c2e; --border: #333;
-            --text: #ffffff; --accent: #ff9500; --gold: #ffd700;
-            --nav: #222; --shadow: none;
+            --bg: #1c1c1e;
+            --card: #2c2c2e;
+            --border: #333;
+            --text: #ffffff;
+            --accent: #ff9500;
+            --gold: #ffd700;
+            --nav: #222;
+            --shadow: none;
+            --btn-shadow: 0 0 30px rgba(255, 149, 0, 0.2);
         }
 
         body {
@@ -37,16 +45,15 @@
             transition: background 0.5s;
         }
 
-        /* --- ГАРАНТИРОВАННОЕ ИСЧЕЗНОВЕНИЕ ЗАГРУЗКИ (CSS) --- */
+        /* --- ЗАЩИТА ОТ ЗАВИСАНИЯ (CSS) --- */
+        /* Этот экран исчезнет сам через 4 секунды, даже если скрипт сломается */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
-            /* Через 4 секунды исчезнет САМ, даже если скрипт сломался */
-            animation: autoHide 0.5s ease-in-out 4s forwards;
+            animation: autoHide 0.5s ease-in-out 4s forwards; /* МАГИЯ */
             pointer-events: all;
         }
-        /* Если класс loaded добавлен скриптом, исчезает мгновенно */
         #loading-screen.loaded { display: none !important; animation: none; }
 
         @keyframes autoHide {
@@ -75,7 +82,7 @@
         }
         .brand-pill {
             font-size: 10px; padding: 4px 10px; border-radius: 10px;
-            background: var(--card); border: 1px solid var(--border); opacity: 0.7;
+            background: var(--card); border: 1px solid var(--border); opacity: 0.7; letter-spacing: 1px;
         }
 
         .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: none; }
@@ -84,9 +91,9 @@
 
         .big-btn {
             width: 250px; height: 250px;
-            background: radial-gradient(circle at 30% 30%, #ffb347, #ff8008);
+            background: radial-gradient(circle at 35% 35%, #ffb347, #ff8008);
             border-radius: 50%; border: 5px solid rgba(255,255,255,0.1);
-            box-shadow: var(--shadow);
+            box-shadow: var(--btn-shadow);
             display: flex; align-items: center; justify-content: center;
             margin: 20px auto; cursor: pointer; position: relative;
             transition: transform 0.05s;
@@ -116,16 +123,17 @@
         .nav-item.active { color: var(--accent); transform: translateY(-3px); }
         .nav-icon { font-size: 22px; margin-bottom: 2px; }
 
-        .promo-input { width: 80%; padding: 12px; border-radius: 10px; border: none; background: #333; color: white; text-align: center; margin: 0 auto 10px; display: block; font-size: 16px; }
+        .promo-input { width: 80%; padding: 12px; border-radius: 10px; border: none; background: #333; color: white; text-align: center; margin: 0 auto 10px; display: block; font-size: 16px; border: 1px solid var(--border); }
         .promo-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 10px; font-weight: bold; color: #000; }
 
-        /* ТУМБЛЕР */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(22px); }
+        
+        .rank-badge { width: 30px; height: 30px; border-radius: 8px; background: #333; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
     </style>
 </head>
 <body>
@@ -138,7 +146,7 @@
     <div class="header">
         <div style="font-size: 10px; opacity: 0.5;">БАЛАНС</div>
         <div class="score-val" id="score">0</div>
-        <div class="brand-pill" id="brand-label">V 20.0</div>
+        <div class="brand-pill" id="brand-label">V 23.0</div>
     </div>
 
     <div id="tab-game" class="content active">
@@ -147,7 +155,7 @@
     </div>
 
     <div id="tab-shop" class="content">
-        <h2>Магазин (60 УР.)</h2>
+        <h2>Магазин (60 ур.)</h2>
         <div id="shop-container"></div>
     </div>
 
@@ -157,8 +165,8 @@
     </div>
 
     <div id="tab-promo" class="content">
-        <div style="text-align:center; margin-top:50px;">
-            <h2>Секретный код</h2>
+        <div style="background: var(--card); padding: 20px; border-radius: 20px; margin-top: 40px; border: 1px solid var(--border);">
+            <h2 style="margin-top:0;">Секретный код</h2>
             <input type="text" id="promoInput" class="promo-input" placeholder="Введи код...">
             <button class="promo-btn" onclick="activatePromo()">АКТИВИРОВАТЬ</button>
             <div id="promo-msg" style="margin-top:15px; font-weight:bold;"></div>
@@ -174,12 +182,12 @@
         </div>
 
         <div class="card">
-            <div><b>Стиль</b><br><small id="theme-name">Premium</small></div>
-            <button class="buy-btn" onclick="toggleTheme()" style="width: auto;">СМЕНИТЬ</button>
+            <div><b>Тема</b><br><small id="theme-name" style="opacity:0.5">Premium</small></div>
+            <button class="buy-btn" onclick="toggleTheme()" style="width:auto;">СМЕНИТЬ</button>
         </div>
 
-        <div class="card" onclick="resetProgress()" style="border-color: var(--danger); cursor: pointer;">
-            <div style="color: var(--danger); font-weight: bold; text-align: center; width:100%;">🗑 Сбросить весь прогресс</div>
+        <div class="card" onclick="resetProgress()" style="border: 1px solid var(--danger); cursor: pointer;">
+            <div style="color: var(--danger); font-weight: bold; text-align: center; width:100%;">🗑 Сбросить прогресс</div>
         </div>
 
         <div style="text-align: center; margin-top: 30px; opacity: 0.3; font-size: 10px;">ID: <span id="user-id-display">...</span></div>
@@ -194,7 +202,7 @@
     </div>
 
     <script>
-        // ГАРАНТИЯ ЗАГРУЗКИ
+        // СНИМАЕМ ЗАГРУЗКУ ЧЕРЕЗ 1 СЕК (ЧТО БЫ НИ СЛУЧИЛОСЬ)
         setTimeout(() => { document.getElementById('loading-screen').classList.add('loaded'); }, 1000);
 
         const firebaseConfig = {
@@ -211,6 +219,7 @@
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.setHeaderColor('#0f0c29');
 
         let score = 0, clickPower = 1;
         let isVibrationEnabled = true;
@@ -225,6 +234,7 @@
         }
         document.getElementById('user-id-display').innerText = userId;
 
+        // 60 УЛУЧШЕНИЙ
         const upgrades = [
             { name: "Палец", p: 1, c: 100 }, { name: "Кастет", p: 5, c: 500 }, { name: "Мышка", p: 15, c: 1500 },
             { name: "Клава", p: 40, c: 3500 }, { name: "Макрос", p: 80, c: 6000 }, { name: "Друг", p: 150, c: 10000 },
@@ -244,11 +254,10 @@
             { name: "Параллель", p: 1000000000000000000, c: 5000000000000000000000 }, { name: "Измерение X", p: 5000000000000000000, c: 25000000000000000000000 }, { name: "Квант. Поле", p: 20000000000000000000, c: 100000000000000000000000 },
             { name: "Время", p: 80000000000000000000, c: 500000000000000000000000 }, { name: "Пространство", p: 300000000000000000000, c: 2000000000000000000000000 }, { name: "Материя", p: 1000000000000000000000, c: 10000000000000000000000000 },
             { name: "Антиматерия", p: 5000000000000000000000, c: 50000000000000000000000000 }, { name: "Энергия", p: 20000000000000000000000, c: 200000000000000000000000000 }, { name: "Пустота", p: 100000000000000000000000, c: 1000000000000000000000000000 },
-            { name: "Сингулярность", p: 500000000000000000000000, c: 5000000000000000000000000000 }, { name: "Матрица", p: 2000000000000000000000000, c: 25000000000000000000000000000 }, { name: "Перчатка Таноса", p: 10000000000000000000000000, c: 10000000000000000000000000000 },
-            { name: "Реальность", p: 50000000000000000000000000, c: 50000000000000000000000000000 }, { name: "Создатель", p: 200000000000000000000000000, c: 25000000000000000000000000000 }, { name: "Сила Twizzik", p: 999999999999999999999999999, c: 9999999999999999999999999999999 }
+            { name: "Сингулярность", p: 500000000000000000000000, c: 5000000000000000000000000000 }, { name: "Матрица", p: 2000000000000000000000000, c: 25000000000000000000000000000 }, { name: "Перчатка Таноса", p: 10000000000000000000000000, c: 100000000000000000000000000000 },
+            { name: "Реальность", p: 50000000000000000000000000, c: 500000000000000000000000000000 }, { name: "Создатель", p: 200000000000000000000000000, c: 2500000000000000000000000000000 }, { name: "Сила Twizzik", p: 999999999999999999999999999, c: 9999999999999999999999999999999 }
         ];
 
-        // --- ЛОГИКА ---
         function start() {
             if(localStorage.getItem('score')) {
                 score = parseFloat(localStorage.getItem('score'));
@@ -283,7 +292,6 @@
             localStorage.setItem('pk', promoKoronka);
             localStorage.setItem('pv', promoVitya);
             localStorage.setItem('theme', currentTheme);
-            
             db.ref('players/' + userId).update({
                 name: userName, score: score, power: clickPower,
                 promoTwizzik, promoKoronka, promoVitya
@@ -311,8 +319,7 @@
         function activatePromo() {
             const code = document.getElementById('promoInput').value.toLowerCase().trim();
             const msg = document.getElementById('promo-msg');
-            let reward = 0;
-            let success = false;
+            let reward = 0; let success = false;
 
             if(code === "twizzik") {
                 if(promoTwizzik) return errorMsg(msg, "Уже был");
@@ -330,17 +337,14 @@
             if(success) {
                 score += reward;
                 msg.style.color = "#2ecc71"; msg.innerText = "Успех! +" + format(reward);
-                tg.HapticFeedback.notificationOccurred('success');
                 save(); updateUI();
             }
         }
 
         function errorMsg(el, txt) { el.style.color = "#e74c3c"; el.innerText = "❌ " + txt; }
-        function enableGodMode() { 
-            const b = document.getElementById('brand-label');
-            b.innerText = "TWIZZIK GOD MODE"; b.style.border = "1px solid #ff9f43"; b.style.color = "#ff9f43";
-        }
+        function enableGodMode() { document.getElementById('brand-label').innerText = "TWIZZIK GOD MODE"; document.getElementById('brand-label').style.borderColor = "var(--accent)"; }
 
+        // --- СМЕНА ТЕМЫ ---
         function toggleTheme() {
             currentTheme = currentTheme === 'premium' ? 'classic' : 'premium';
             applyTheme(); save();
@@ -352,9 +356,8 @@
         }
 
         function resetProgress() {
-            if(confirm("Сбросить всё?")) {
-                score = 0; clickPower = 1;
-                promoTwizzik = false; promoKoronka = false; promoVitya = false;
+            if(confirm("Удалить весь прогресс?")) {
+                score = 0; clickPower = 1; promoTwizzik = false; promoKoronka = false; promoVitya = false;
                 save(); location.reload();
             }
         }
@@ -370,11 +373,4 @@
         }
 
         function loadLeaders() {
-            db.ref('players').orderByChild('score').limitToLast(50).on('value', snap => {
-                let html = '';
-                let arr = [];
-                snap.forEach(c => arr.push(c.val()));
-                arr.reverse();
-                arr.forEach((p, i) => {
-                    let style = p.name === userName ? "border:1px solid var(--accent); background:rgba(255,159,67,0.1)" : "";
-                    html += `<div class="card" style="${style}"><div style="display:flex;gap:10px;"><b>#${i+1}</b> <span>${p.name}</span></div><div>${format(p.score)}</div></div>
+            db.ref('players').orderByChild('score').limitToLa
