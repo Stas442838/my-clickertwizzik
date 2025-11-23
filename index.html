@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin Online TWIZZIK</title>
+    <title>Mandarin Online 13.0</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -16,6 +16,7 @@
         body { margin: 0; padding: 0; font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-color); height: 100vh; display: flex; flex-direction: column; user-select: none; -webkit-tap-highlight-color: transparent; }
         .header { text-align: center; padding: 15px; background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); }
         .score-value { font-size: 32px; font-weight: 800; color: var(--gold); text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+        .brand-hint { font-size: 10px; opacity: 0.3; margin-top: 5px; letter-spacing: 2px; text-transform: uppercase; transition: color 0.3s; }
         .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: none; }
         .content.active { display: flex; flex-direction: column; }
         .big-button { width: 250px; height: 250px; background: radial-gradient(circle at 30% 30%, #ffb347, #ff8c00); border-radius: 50%; border: 6px solid #e67e22; box-shadow: 0 10px 40px rgba(255, 140, 0, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; transition: transform 0.05s; }
@@ -39,7 +40,6 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 9px; transition: 0.2s; }
         .nav-item.active { color: var(--accent); transform: scale(1.1); }
         .nav-icon { font-size: 20px; margin-bottom: 2px; }
-        
         #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-color); z-index: 9999; display: flex; justify-content: center; align-items: center; color: var(--accent); font-weight: bold; font-size: 20px; }
     </style>
 </head>
@@ -50,7 +50,7 @@
     <div class="header">
         <div style="font-size: 12px; opacity: 0.5;">БАЛАНС</div>
         <div class="score-value" id="score">0</div>
-        <div style="font-size: 10px; opacity: 0.3; margin-top: 5px; letter-spacing: 2px;">ONLINE •  TWIZZIK</div>
+        <div class="brand-hint" id="brand-label">ONLINE • V 13.0</div>
     </div>
 
     <div id="tab-game" class="content active">
@@ -81,6 +81,10 @@
         <h2>Настройки</h2>
         <div class="list-item"><div><b>Вибрация</b></div><label class="switch"><input type="checkbox" id="vibrationToggle" checked onchange="toggleVibration()"><span class="slider"></span></label></div>
         <div class="list-item" onclick="resetProgress()" style="justify-content: center; color: var(--danger); cursor: pointer; margin-top: 20px;"><b>🗑 Сброс всего</b></div>
+        
+        <div style="text-align: center; margin-top: 30px; opacity: 0.3; font-size: 12px;" onclick="easterEgg()">
+            Version 13.0 • by Twizzik
+        </div>
     </div>
 
     <div class="bottom-nav">
@@ -111,9 +115,14 @@
         let score = 0;
         let clickPower = 1;
         let isVibrationEnabled = true;
+        
+        // Переменные промокодов
         let promoTwizzikUsed = false;
         let promoKoronkaUsed = false;
+        let promoVityaUsed = false; // НОВЫЙ
         
+        let easterCount = 0;
+
         let userId = "guest_" + Math.floor(Math.random() * 100000);
         let userName = "Guest";
         
@@ -172,7 +181,7 @@
             { name: "Перчатка Таноса", power: 800000000000000000, cost: 35000000000000000000000 },
             { name: "Реальность", power: 2000000000000000000, cost: 100000000000000000000000 },
             { name: "Создатель", power: 5000000000000000000, cost: 400000000000000000000000 },
-            { name: "Могущий Twizzik", power: 9999999999999999999, cost: 999999999999999999999999 }
+            { name: "Сила Twizzik", power: 9999999999999999999, cost: 999999999999999999999999 }
         ];
 
         function initGame() {
@@ -181,22 +190,31 @@
                 if (data) {
                     score = parseFloat(data.score) || 0;
                     clickPower = parseFloat(data.power) || 1;
-                    if(data.promoTwizzik) promoTwizzikUsed = data.promoTwizzik;
+                    
+                    // Загрузка промокодов
+                    if(data.promoTwizzik) {
+                        promoTwizzikUsed = data.promoTwizzik;
+                        enableTwizzikMode(); // Если уже введен - включаем пасхалку
+                    }
                     if(data.promoKoronka) promoKoronkaUsed = data.promoKoronka;
                     if(data.promoVitya) promoVityaUsed = data.promoVitya;
+
                 } else {
+                    // Локальное сохранение
                     if(localStorage.getItem('score')) {
                         score = parseFloat(localStorage.getItem('score'));
                         clickPower = parseFloat(localStorage.getItem('power'));
                         promoTwizzikUsed = localStorage.getItem('promo_twizzik_used') === 'true';
+                        if(promoTwizzikUsed) enableTwizzikMode();
                         promoKoronkaUsed = localStorage.getItem('promo_koronka_used') === 'true';
-                        promoVityaUsed = localStorage.getItem('promo_Витя_пидрила_user') === 'true';
+                        promoVityaUsed = localStorage.getItem('promo_vitya_used') === 'true';
                     }
                 }
                 document.getElementById('loading-screen').style.display = 'none';
                 updateUI();
             }).catch((error) => {
                 document.getElementById('loading-screen').style.display = 'none';
+                // Оффлайн режим
                 if(localStorage.getItem('score')) {
                     score = parseFloat(localStorage.getItem('score'));
                     clickPower = parseFloat(localStorage.getItem('power'));
@@ -212,7 +230,7 @@
             localStorage.setItem('vibration', isVibrationEnabled);
             localStorage.setItem('promo_twizzik_used', promoTwizzikUsed);
             localStorage.setItem('promo_koronka_used', promoKoronkaUsed);
-            localStorage.setItem('promo_Vitya_used', promoVityaUsed);
+            localStorage.setItem('promo_vitya_used', promoVityaUsed);
         }
 
         function saveToCloud() {
@@ -249,35 +267,61 @@
             }
         }
 
+        // 🔥 НОВЫЙ КОД ДЛЯ ПРОМОКОДОВ 🔥
         function activatePromo() {
             const input = document.getElementById('promoInput');
             const msg = document.getElementById('promo-msg');
             const code = input.value.trim().toLowerCase();
 
+            // 1. TWIZZIK (+ПАСХАЛКА)
             if (code === "twizzik") {
                 if (promoTwizzikUsed) errorPromo(msg, "Уже использован!");
-                else { score += 5000000000; promoTwizzikUsed = true; successPromo(msg, "+5 МЛРД!"); }
+                else { 
+                    score += 5000000000; 
+                    promoTwizzikUsed = true; 
+                    enableTwizzikMode(); // Включаем режим Twizzik
+                    successPromo(msg, "+5 МЛРД! (Mode ON)"); 
+                }
             } 
+            // 2. KORONKA
             else if (code === "koronka") {
                 if (promoKoronkaUsed) errorPromo(msg, "Уже использован!");
                 else { score += 100000; promoKoronkaUsed = true; successPromo(msg, "+100,000 МОНЕТ!"); }
-            }
-            else if (code === "Vitya") {
-                if (promoVityaUsed) errorPromo(msg, "Уже использован!");
-                else { score += 364; promoVityaUsed = true; successPromo(msg, "+364 МОНЕТ!"); }
             } 
+            // 3. VITYA (НОВЫЙ)
+            else if (code === "vitya") {
+                if (promoVityaUsed) errorPromo(msg, "Уже использован!");
+                else { score += 364; promoVityaUsed = true; successPromo(msg, "+364 МОНЕТЫ!"); }
+            }
             else errorPromo(msg, "Неверный код");
         }
 
         function successPromo(el, txt) { saveToCloud(); updateUI(); el.style.color = "var(--accent)"; el.innerText = "✅ " + txt; if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('success'); }
         function errorPromo(el, txt) { el.style.color = "var(--danger)"; el.innerText = "❌ " + txt; if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error'); }
 
+        // --- ПАСХАЛКИ ---
+        function enableTwizzikMode() {
+            document.getElementById('brand-label').innerText = "TWIZZIK • GOD MODE";
+            document.getElementById('brand-label').style.color = "#ff9500";
+            document.getElementById('brand-label').style.fontWeight = "bold";
+        }
+
+        function easterEgg() {
+            easterCount++;
+            if(easterCount === 5) {
+                alert("🍊 Twizzik следит за тобой! 🍊");
+                easterCount = 0;
+            }
+        }
+
         function resetProgress() {
-            if(confirm("Сбросить игру?")) {
+            if(confirm("Удалить всё?")) {
                 score = 0; clickPower = 1;
                 promoTwizzikUsed = false;
                 promoKoronkaUsed = false;
+                promoVityaUsed = false;
                 saveToCloud(); updateUI();
+                window.location.reload();
             }
         }
 
@@ -316,32 +360,4 @@
                     <button class="buy-btn" ${dis} onclick="buy(${u.power}, ${u.cost})">${formatNumber(u.cost)}</button>
                 </div>`;
             });
-            document.getElementById('shop-container').innerHTML = html;
-        }
-
-        db.ref('players').orderByChild('score').limitToLast(100).on('value', (snapshot) => {
-            const list = document.getElementById('leaders-list');
-            list.innerHTML = "";
-            let players = [];
-            snapshot.forEach(c => players.push(c.val()));
-            players.reverse();
-            if (players.length === 0) list.innerHTML = "<div style='text-align:center; padding:20px; opacity:0.5;'>Пусто</div>";
-            players.forEach((p, i) => {
-                let color = i==0?'#ffd700':(i==1?'#c0c0c0':(i==2?'#cd7f32':'#fff'));
-                let isMe = p.name === userName;
-                let style = isMe ? 'border:1px solid #ff9500;background:rgba(255,149,0,0.1)' : '';
-                list.innerHTML += `<div class="leader-item" style="${style}">
-                    <div class="rank" style="color:${color}">#${i+1}</div>
-                    <div class="avatar">👤</div>
-                    <div style="flex:1; overflow:hidden;">
-                        <div style="font-weight:bold">${p.name}</div>
-                        <div style="opacity:0.6;font-size:12px">${formatNumber(p.score)}</div>
-                    </div>
-                </div>`;
-            });
-        });
-
-        initGame();
-    </script>
-</body>
-    </html>
+            doc
