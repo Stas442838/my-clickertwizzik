@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin Ultimate v19</title>
+    <title>Mandarin v20 Nuclear</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* --- ПЕРЕМЕННЫЕ (ТЕМА БУДЕТ ИХ МЕНЯТЬ) --- */
+        /* --- CSS ПЕРЕМЕННЫЕ --- */
         :root {
             --bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             --card: rgba(255, 255, 255, 0.08);
@@ -17,20 +17,15 @@
             --text: #ffffff;
             --accent: #ff9f43;
             --gold: linear-gradient(to bottom, #f1c40f, #f39c12);
-            --nav: rgba(20, 20, 30, 0.9);
+            --nav: rgba(20, 20, 30, 0.95);
             --shadow: 0 0 20px rgba(255, 159, 67, 0.6);
         }
 
-        /* КЛАССИЧЕСКАЯ ТЕМА (ПРОШЛАЯ) */
+        /* ТЕМА: CLASSIC */
         [data-theme="classic"] {
-            --bg: #1c1c1e;
-            --card: #2c2c2e;
-            --border: #333;
-            --text: #ffffff;
-            --accent: #ff9500;
-            --gold: #ffd700;
-            --nav: #2c2c2e;
-            --shadow: none;
+            --bg: #1c1c1e; --card: #2c2c2e; --border: #333;
+            --text: #ffffff; --accent: #ff9500; --gold: #ffd700;
+            --nav: #222; --shadow: none;
         }
 
         body {
@@ -39,16 +34,27 @@
             background: var(--bg); color: var(--text);
             height: 100vh; display: flex; flex-direction: column;
             overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
-            transition: background 0.5s ease;
+            transition: background 0.5s;
         }
 
-        /* --- ЭКРАН ЗАГРУЗКИ --- */
+        /* --- ГАРАНТИРОВАННОЕ ИСЧЕЗНОВЕНИЕ ЗАГРУЗКИ (CSS) --- */
         #loading-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999;
             display: flex; justify-content: center; align-items: center; flex-direction: column;
-            transition: opacity 0.5s ease;
+            /* Через 4 секунды исчезнет САМ, даже если скрипт сломался */
+            animation: autoHide 0.5s ease-in-out 4s forwards;
+            pointer-events: all;
         }
+        /* Если класс loaded добавлен скриптом, исчезает мгновенно */
+        #loading-screen.loaded { display: none !important; animation: none; }
+
+        @keyframes autoHide {
+            0% { opacity: 1; }
+            99% { opacity: 0; pointer-events: none; }
+            100% { opacity: 0; visibility: hidden; pointer-events: none; }
+        }
+
         .spinner {
             width: 40px; height: 40px; border: 4px solid #333;
             border-top: 4px solid var(--accent); border-radius: 50%;
@@ -113,7 +119,7 @@
         .promo-input { width: 80%; padding: 12px; border-radius: 10px; border: none; background: #333; color: white; text-align: center; margin: 0 auto 10px; display: block; font-size: 16px; }
         .promo-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 10px; font-weight: bold; color: #000; }
 
-        /* НАСТРОЙКИ */
+        /* ТУМБЛЕР */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
@@ -126,13 +132,13 @@
 
     <div id="loading-screen">
         <div class="spinner"></div>
-        <div style="color:white; font-weight:bold;">ЗАГРУЗКА...</div>
+        <div style="color:white; font-weight:bold;">ЗАПУСК...</div>
     </div>
 
     <div class="header">
         <div style="font-size: 10px; opacity: 0.5;">БАЛАНС</div>
         <div class="score-val" id="score">0</div>
-        <div class="brand-pill" id="brand-label">ULTIMATE v19</div>
+        <div class="brand-pill" id="brand-label">V 20.0</div>
     </div>
 
     <div id="tab-game" class="content active">
@@ -188,16 +194,9 @@
     </div>
 
     <script>
-        // --- СИСТЕМА ЗАПУСКА ---
-        window.onload = function() {
-            setTimeout(() => {
-                const ls = document.getElementById('loading-screen');
-                ls.style.opacity = '0';
-                setTimeout(() => ls.style.display = 'none', 500);
-            }, 1500); // Гарантированно пускает через 1.5 сек
-        };
+        // ГАРАНТИЯ ЗАГРУЗКИ
+        setTimeout(() => { document.getElementById('loading-screen').classList.add('loaded'); }, 1000);
 
-        // --- НАСТРОЙКИ FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -213,7 +212,6 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // --- ПЕРЕМЕННЫЕ ---
         let score = 0, clickPower = 1;
         let isVibrationEnabled = true;
         let currentTheme = 'premium';
@@ -227,73 +225,31 @@
         }
         document.getElementById('user-id-display').innerText = userId;
 
-        // --- 60 УЛУЧШЕНИЙ (ОГРОМНЫЙ СПИСОК) ---
         const upgrades = [
-            { name: "Палец", p: 1, c: 100 },
-            { name: "Кастет", p: 5, c: 500 },
-            { name: "Мышка", p: 15, c: 1500 },
-            { name: "Клава", p: 40, c: 3500 },
-            { name: "Макрос", p: 80, c: 6000 },
-            { name: "Друг", p: 150, c: 10000 },
-            { name: "Семья", p: 300, c: 25000 },
-            { name: "Офис", p: 600, c: 50000 },
-            { name: "Скрипт", p: 1200, c: 120000 },
-            { name: "Хакер", p: 2500, c: 300000 },
-            { name: "Видюха", p: 5000, c: 700000 },
-            { name: "CPU", p: 10000, c: 1500000 },
-            { name: "Сервер", p: 25000, c: 4000000 },
-            { name: "Ботнет", p: 60000, c: 10000000 },
-            { name: "Майнинг", p: 150000, c: 25000000 },
-            { name: "Крипта", p: 350000, c: 60000000 },
-            { name: "Нейросеть", p: 800000, c: 150000000 },
-            { name: "Дата-центр", p: 2000000, c: 400000000 },
-            { name: "ИИ", p: 5000000, c: 1000000000 },
-            { name: "Стартап", p: 12000000, c: 3000000000 },
-            { name: "Корпорация", p: 30000000, c: 8000000000 },
-            { name: "Холдинг", p: 55000000, c: 15000000000 },
-            { name: "Спутник", p: 100000000, c: 30000000000 },
-            { name: "МКС", p: 250000000, c: 70000000000 },
-            { name: "Ракета", p: 600000000, c: 200000000000 },
-            { name: "SpaceX", p: 1500000000, c: 500000000000 },
-            { name: "Луна", p: 4000000000, c: 1500000000000 },
-            { name: "База Луна", p: 10000000000, c: 4000000000000 },
-            { name: "Марс", p: 25000000000, c: 12000000000000 },
-            { name: "Колония", p: 70000000000, c: 35000000000000 },
-            { name: "Терраформ", p: 200000000000, c: 100000000000000 },
-            { name: "Планета", p: 500000000000, c: 300000000000000 },
-            { name: "Звезда", p: 1500000000000, c: 1000000000000000 },
-            { name: "Солнце", p: 4000000000000, c: 3000000000000000 },
-            { name: "Сверхновая", p: 10000000000000, c: 10000000000000000 },
-            { name: "Черная Дыра", p: 30000000000000, c: 35000000000000000 },
-            { name: "Квазар", p: 80000000000000, c: 100000000000000000 },
-            { name: "Пульсар", p: 200000000000000, c: 300000000000000000 },
-            { name: "Туманность", p: 600000000000000, c: 1000000000000000000 },
-            { name: "Галактика", p: 2000000000000000, c: 4000000000000000000 },
-            { name: "Скопление", p: 5000000000000000, c: 15000000000000000000 },
-            { name: "Сверхскопление", p: 15000000000000000, c: 50000000000000000000 },
-            { name: "Войд", p: 40000000000000000, c: 200000000000000000000 },
-            { name: "Вселенная", p: 100000000000000000, c: 500000000000000000000 },
-            { name: "Мультивселенная", p: 300000000000000000, c: 1500000000000000000000 },
-            { name: "Параллель", p: 1000000000000000000, c: 5000000000000000000000 },
-            { name: "Измерение X", p: 5000000000000000000, c: 25000000000000000000000 },
-            { name: "Квант. Поле", p: 20000000000000000000, c: 100000000000000000000000 },
-            { name: "Время", p: 80000000000000000000, c: 500000000000000000000000 },
-            { name: "Пространство", p: 300000000000000000000, c: 2000000000000000000000000 },
-            { name: "Материя", p: 1000000000000000000000, c: 10000000000000000000000000 },
-            { name: "Антиматерия", p: 5000000000000000000000, c: 50000000000000000000000000 },
-            { name: "Энергия", p: 20000000000000000000000, c: 200000000000000000000000000 },
-            { name: "Пустота", p: 100000000000000000000000, c: 1000000000000000000000000000 },
-            { name: "Сингулярность", p: 500000000000000000000000, c: 5000000000000000000000000000 },
-            { name: "Матрица", p: 2000000000000000000000000, c: 25000000000000000000000000000 },
-            { name: "Перчатка Таноса", p: 10000000000000000000000000, c: 100000000000000000000000000000 },
-            { name: "Реальность", p: 50000000000000000000000000, c: 500000000000000000000000000000 },
-            { name: "Создатель", p: 200000000000000000000000000, c: 2500000000000000000000000000000 },
-            { name: "Сила Twizzik", p: 999999999999999999999999999, c: 9999999999999999999999999999999 }
+            { name: "Палец", p: 1, c: 100 }, { name: "Кастет", p: 5, c: 500 }, { name: "Мышка", p: 15, c: 1500 },
+            { name: "Клава", p: 40, c: 3500 }, { name: "Макрос", p: 80, c: 6000 }, { name: "Друг", p: 150, c: 10000 },
+            { name: "Семья", p: 300, c: 25000 }, { name: "Офис", p: 600, c: 50000 }, { name: "Скрипт", p: 1200, c: 120000 },
+            { name: "Хакер", p: 2500, c: 300000 }, { name: "Видюха", p: 5000, c: 700000 }, { name: "CPU", p: 10000, c: 1500000 },
+            { name: "Сервер", p: 25000, c: 4000000 }, { name: "Ботнет", p: 60000, c: 10000000 }, { name: "Майнинг", p: 150000, c: 25000000 },
+            { name: "Крипта", p: 350000, c: 60000000 }, { name: "Нейросеть", p: 800000, c: 150000000 }, { name: "Дата-центр", p: 2000000, c: 400000000 },
+            { name: "ИИ", p: 5000000, c: 1000000000 }, { name: "Стартап", p: 12000000, c: 3000000000 }, { name: "Корпорация", p: 30000000, c: 8000000000 },
+            { name: "Холдинг", p: 55000000, c: 15000000000 }, { name: "Спутник", p: 100000000, c: 30000000000 }, { name: "МКС", p: 250000000, c: 70000000000 },
+            { name: "Ракета", p: 600000000, c: 200000000000 }, { name: "SpaceX", p: 1500000000, c: 500000000000 }, { name: "Луна", p: 4000000000, c: 1500000000000 },
+            { name: "База Луна", p: 10000000000, c: 4000000000000 }, { name: "Марс", p: 25000000000, c: 12000000000000 }, { name: "Колония", p: 70000000000, c: 35000000000000 },
+            { name: "Терраформ", p: 200000000000, c: 100000000000000 }, { name: "Планета", p: 500000000000, c: 300000000000000 }, { name: "Звезда", p: 1500000000000, c: 1000000000000000 },
+            { name: "Солнце", p: 4000000000000, c: 3000000000000000 }, { name: "Сверхновая", p: 10000000000000, c: 10000000000000000 }, { name: "Черная Дыра", p: 30000000000000, c: 35000000000000000 },
+            { name: "Квазар", p: 80000000000000, c: 100000000000000000 }, { name: "Пульсар", p: 20000000000000, c: 300000000000000000 }, { name: "Туманность", p: 600000000000000, c: 1000000000000000000 },
+            { name: "Галактика", p: 2000000000000000, c: 4000000000000000000 }, { name: "Скопление", p: 5000000000000000, c: 15000000000000000000 }, { name: "Сверхскопление", p: 15000000000000000, c: 50000000000000000000 },
+            { name: "Войд", p: 40000000000000000, c: 200000000000000000000 }, { name: "Вселенная", p: 100000000000000000, c: 500000000000000000000 }, { name: "Мультивселенная", p: 300000000000000000, c: 1500000000000000000000 },
+            { name: "Параллель", p: 1000000000000000000, c: 5000000000000000000000 }, { name: "Измерение X", p: 5000000000000000000, c: 25000000000000000000000 }, { name: "Квант. Поле", p: 20000000000000000000, c: 100000000000000000000000 },
+            { name: "Время", p: 80000000000000000000, c: 500000000000000000000000 }, { name: "Пространство", p: 300000000000000000000, c: 2000000000000000000000000 }, { name: "Материя", p: 1000000000000000000000, c: 10000000000000000000000000 },
+            { name: "Антиматерия", p: 5000000000000000000000, c: 50000000000000000000000000 }, { name: "Энергия", p: 20000000000000000000000, c: 200000000000000000000000000 }, { name: "Пустота", p: 100000000000000000000000, c: 1000000000000000000000000000 },
+            { name: "Сингулярность", p: 500000000000000000000000, c: 5000000000000000000000000000 }, { name: "Матрица", p: 2000000000000000000000000, c: 25000000000000000000000000000 }, { name: "Перчатка Таноса", p: 10000000000000000000000000, c: 10000000000000000000000000000 },
+            { name: "Реальность", p: 50000000000000000000000000, c: 50000000000000000000000000000 }, { name: "Создатель", p: 200000000000000000000000000, c: 25000000000000000000000000000 }, { name: "Сила Twizzik", p: 999999999999999999999999999, c: 9999999999999999999999999999999 }
         ];
 
-        // --- ОСНОВНОЙ КОД ---
+        // --- ЛОГИКА ---
         function start() {
-            // Загрузка из LocalStorage (мгновенно)
             if(localStorage.getItem('score')) {
                 score = parseFloat(localStorage.getItem('score'));
                 clickPower = parseFloat(localStorage.getItem('power'));
@@ -306,7 +262,6 @@
             if(promoTwizzik) enableGodMode();
             updateUI();
 
-            // Подгрузка из Firebase (если есть сеть)
             db.ref('players/' + userId).once('value').then(snap => {
                 const d = snap.val();
                 if(d) {
@@ -386,29 +341,25 @@
             b.innerText = "TWIZZIK GOD MODE"; b.style.border = "1px solid #ff9f43"; b.style.color = "#ff9f43";
         }
 
-        // --- ТЕМЫ ---
         function toggleTheme() {
             currentTheme = currentTheme === 'premium' ? 'classic' : 'premium';
-            applyTheme();
-            save();
+            applyTheme(); save();
         }
 
         function applyTheme() {
             document.body.setAttribute('data-theme', currentTheme);
-            document.getElementById('theme-name').innerText = currentTheme === 'premium' ? 'Premium (Неон)' : 'Classic (Строгий)';
+            document.getElementById('theme-name').innerText = currentTheme === 'premium' ? 'Premium' : 'Classic';
         }
 
         function resetProgress() {
-            if(confirm("Точно сбросить?")) {
+            if(confirm("Сбросить всё?")) {
                 score = 0; clickPower = 1;
                 promoTwizzik = false; promoKoronka = false; promoVitya = false;
                 save(); location.reload();
             }
         }
 
-        function toggleVibration() {
-            isVibrationEnabled = document.getElementById('vibrationToggle').checked;
-        }
+        function toggleVibration() { isVibrationEnabled = document.getElementById('vibrationToggle').checked; }
 
         function tab(t, el) {
             document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
@@ -417,3 +368,13 @@
             el.classList.add('active');
             if(t === 'leaders') loadLeaders();
         }
+
+        function loadLeaders() {
+            db.ref('players').orderByChild('score').limitToLast(50).on('value', snap => {
+                let html = '';
+                let arr = [];
+                snap.forEach(c => arr.push(c.val()));
+                arr.reverse();
+                arr.forEach((p, i) => {
+                    let style = p.name === userName ? "border:1px solid var(--accent); background:rgba(255,159,67,0.1)" : "";
+                    html += `<div class="card" style="${style}"><div style="display:flex;gap:10px;"><b>#${i+1}</b> <span>${p.name}</span></div><div>${format(p.score)}</div></div>
