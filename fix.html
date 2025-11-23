@@ -3,219 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin v36 Final Fix</title>
+    <title>Mandarin Online Final</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        /* --- СБРОС --- */
-        * { -webkit-tap-highlight-color: transparent; user-select: none; outline: none; }
-
-        /* --- ТЕМЫ --- */
         :root {
-            /* PREMIUM (По умолчанию) */
-            --bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            --text: #ffffff;
-            --card-bg: rgba(255, 255, 255, 0.08);
-            --border: rgba(255, 255, 255, 0.1);
-            --accent: #ff9f43;
-            --gold: linear-gradient(to bottom, #f1c40f, #f39c12);
-            --nav-bg: rgba(20, 20, 30, 0.98);
-            --shadow: 0 0 30px rgba(255, 159, 67, 0.4);
+            --bg-color: #1c1c1e; --card-bg: #2c2c2e; --text-color: #ffffff;
+            --accent: #ff9500; --gold: #ffd700; --danger: #ff3b30; --input-bg: #3a3a3c;
         }
-
-        [data-theme="classic"] {
-            /* CLASSIC (Как на скрине) */
-            --bg: #1c1c1e;
-            --text: #ffffff;
-            --card-bg: #2c2c2e;
-            --border: #333;
-            --accent: #ff9500;
-            --gold: #ffd700;
-            --nav-bg: #1c1c1e;
-            --shadow: none;
-        }
-
-        body {
-            margin: 0; padding: 0; font-family: sans-serif;
-            background: var(--bg); color: var(--text);
-            height: 100vh; display: flex; flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* ПОЛЕ ОШИБОК (ВИДНО ТОЛЬКО ЕСЛИ СЛОМАЕТСЯ) */
-        #err-box {
-            position: fixed; top: 0; left: 0; width: 100%; background: red; color: white;
-            font-size: 12px; padding: 5px; z-index: 999999; display: none; text-align: center;
-        }
-
-        /* ШАПКА */
-        .header { text-align: center; padding-top: 30px; padding-bottom: 10px; z-index: 10; }
-        .balance-label { font-size: 12px; opacity: 0.5; letter-spacing: 1px; text-transform: uppercase; }
-        .score-val { font-size: 42px; font-weight: 800; background: var(--gold); -webkit-background-clip: text; color: transparent; margin: 5px 0; }
-        .brand-pill { font-size: 10px; opacity: 0.3; letter-spacing: 2px; text-transform: uppercase; }
-
+        body { margin: 0; padding: 0; font-family: -apple-system, sans-serif; background: var(--bg-color); color: var(--text-color); height: 100vh; display: flex; flex-direction: column; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .header { text-align: center; padding: 15px; background: rgba(28, 28, 30, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .score-value { font-size: 32px; font-weight: 800; color: var(--gold); text-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
         .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: none; }
         .content.active { display: flex; flex-direction: column; }
-
-        /* МАНДАРИН С АНИМАЦИЕЙ */
-        @keyframes breathe { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
-        
-        .big-btn {
-            width: 260px; height: 260px;
-            background: radial-gradient(circle at 30% 30%, #ffb347, #ff8008);
-            border-radius: 50%;
-            box-shadow: var(--shadow);
-            display: flex; align-items: center; justify-content: center;
-            margin: 30px auto; cursor: pointer; position: relative; z-index: 20;
-            animation: breathe 3s infinite ease-in-out;
-            transition: transform 0.05s;
-        }
-        .big-btn:active { animation: none; transform: scale(0.92); }
-        .big-btn span { font-size: 130px; pointer-events: none; }
-
-        /* КАРТОЧКИ */
-        .card {
-            background: var(--card-bg); border: 1px solid var(--border);
-            border-radius: 14px; padding: 15px; margin-bottom: 8px;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .buy-btn {
-            background: var(--accent); color: #000; border: none;
-            padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 12px; min-width: 70px;
-        }
+        .big-button { width: 250px; height: 250px; background: radial-gradient(circle at 30% 30%, #ffb347, #ff8c00); border-radius: 50%; border: 6px solid #e67e22; box-shadow: 0 10px 40px rgba(255, 140, 0, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto; cursor: pointer; transition: transform 0.05s; }
+        .big-button:active { transform: scale(0.95); }
+        .big-button span { font-size: 90px; pointer-events: none; }
+        .list-item, .leader-item { background: var(--card-bg); border-radius: 16px; padding: 12px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; }
+        .leader-item { justify-content: flex-start; }
+        .buy-btn { background: var(--accent); color: #000; border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; min-width: 70px; text-align: center; }
         .buy-btn:disabled { background: #444; color: #888; }
-
-        /* --- НИЖНЕЕ МЕНЮ (ПРИКЛЕЕНО К НИЗУ) --- */
-        .nav {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            background: var(--nav-bg);
-            display: flex; justify-content: space-around;
-            padding-bottom: 20px; padding-top: 12px;
-            border-top: 1px solid var(--border);
-            z-index: 100;
-        }
-        .nav-item {
-            display: flex; flex-direction: column; align-items: center;
-            opacity: 0.5; transition: 0.2s; cursor: pointer; flex: 1;
-        }
-        .nav-item.active { opacity: 1; transform: scale(1.1); color: var(--accent); }
-        .nav-icon { font-size: 24px; margin-bottom: 4px; }
-        .nav-label { font-size: 10px; font-weight: 500; }
-
-        /* ЭЛЕМЕНТЫ */
-        .promo-input { width: 80%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: white; text-align: center; margin: 0 auto 10px; display: block; font-size: 16px; }
-        .promo-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 10px; font-weight: bold; color: #000; }
-
+        .rank { width: 30px; font-weight: bold; text-align: center; margin-right: 10px; }
+        .avatar { width: 30px; height: 30px; border-radius: 50%; background: #444; margin-right: 10px; display: flex; align-items: center; justify-content: center; }
+        .promo-input { width: 80%; padding: 15px; border-radius: 10px; border: none; background: var(--input-bg); color: white; font-size: 18px; text-align: center; margin: 0 auto 15px auto; display: block; }
+        .promo-btn { width: 100%; padding: 15px; background: var(--accent); color: black; font-weight: bold; font-size: 16px; border: none; border-radius: 10px; }
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(22px); }
+        .bottom-nav { position: fixed; bottom: 15px; left: 15px; right: 15px; background: rgba(44, 44, 46, 0.95); backdrop-filter: blur(20px); border-radius: 25px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 9px; transition: 0.2s; }
+        .nav-item.active { color: var(--accent); transform: scale(1.1); }
+        .nav-icon { font-size: 20px; margin-bottom: 2px; }
         
-        .rank-badge { font-weight: bold; color: var(--accent); margin-right: 10px; font-size: 16px; }
+        #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-color); z-index: 9999; display: flex; justify-content: center; align-items: center; color: var(--accent); font-weight: bold; font-size: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="err-box"></div>
+    <div id="loading-screen">Загрузка...</div>
 
     <div class="header">
-        <div class="balance-label">БАЛАНС</div>
-        <div class="score-val" id="score">0</div>
-        <div class="brand-pill" id="brand-label">CREATED BY TWIZZIK</div>
+        <div style="font-size: 12px; opacity: 0.5;">БАЛАНС</div>
+        <div class="score-value" id="score">0</div>
+        <div style="font-size: 10px; opacity: 0.3; margin-top: 5px; letter-spacing: 2px;">ONLINE • FINAL</div>
     </div>
 
     <div id="tab-game" class="content active">
-        <div class="big-btn" id="clickBtn" onclick="gameClick()"><span>🍊</span></div>
-        <div style="text-align:center; margin-top:20px; font-size:14px; opacity:0.7;">Сила: <b id="power" style="color:var(--accent)">1</b></div>
+        <div class="big-button" id="clickBtn" onclick="doClick()"><span>🍊</span></div>
+        <div style="text-align: center; margin-top: 30px; opacity: 0.7;">Сила: +<span id="power" style="font-weight: bold; color: var(--accent);">1</span></div>
     </div>
 
     <div id="tab-shop" class="content">
-        <h2 style="margin-bottom: 15px; padding-left: 5px;">Магазин</h2>
+        <h2>Магазин</h2>
         <div id="shop-container"></div>
     </div>
 
     <div id="tab-leaders" class="content">
-        <h2 style="margin-bottom: 15px; padding-left: 5px;">Топ Игроков</h2>
+        <h2>🏆 Топ Игроков</h2>
         <div id="leaders-list">Загрузка...</div>
     </div>
 
     <div id="tab-promo" class="content">
-        <div style="background:var(--card-bg); padding:20px; border-radius:20px; margin-top:40px; text-align:center; border:1px solid var(--border);">
-            <h2 style="margin-top:0">Коды</h2>
+        <h2>Секретный код</h2>
+        <div style="text-align:center; margin-top: 50px;">
             <input type="text" id="promoInput" class="promo-input" placeholder="Введи код...">
-            <button class="promo-btn" onclick="activatePromo()">ПРИМЕНИТЬ</button>
-            <div id="promo-msg" style="margin-top:15px; font-weight:bold"></div>
+            <button class="promo-btn" onclick="activatePromo()">АКТИВИРОВАТЬ</button>
+            <div id="promo-msg" style="margin-top:15px; font-weight:bold;"></div>
         </div>
     </div>
 
     <div id="tab-settings" class="content">
-        <h2 style="padding-left: 5px;">Меню</h2>
-        
-        <div class="card">
-            <div><b>Вибрация</b></div>
-            <label class="switch"><input type="checkbox" id="vibrationToggle" checked onchange="toggleVibration()"><span class="slider"></span></label>
-        </div>
-
-        <div class="card">
-            <div><b>Стиль</b><br><small id="theme-name" style="opacity:0.5">Premium</small></div>
-            <button class="buy-btn" onclick="toggleTheme()" style="width:auto">СМЕНИТЬ</button>
-        </div>
-
-        <div class="card" onclick="resetProgress()" style="cursor: pointer; border: 1px solid red;">
-            <div style="color:red; font-weight:bold; text-align:center; width:100%">🗑 Сброс</div>
-        </div>
-        
-        <div style="text-align:center; margin-top:30px; opacity:0.2; font-size:10px;">ID: <span id="uid">...</span></div>
+        <h2>Настройки</h2>
+        <div class="list-item"><div><b>Вибрация</b></div><label class="switch"><input type="checkbox" id="vibrationToggle" checked onchange="toggleVibration()"><span class="slider"></span></label></div>
+        <div class="list-item" onclick="resetProgress()" style="justify-content: center; color: var(--danger); cursor: pointer; margin-top: 20px;"><b>🗑 Сброс всего</b></div>
     </div>
 
-    <div class="nav">
-        <div class="nav-item active" onclick="tab('game', this)">
-            <div class="nav-icon">🍊</div><div class="nav-label">Клик</div>
-        </div>
-        <div class="nav-item" onclick="tab('shop', this)">
-            <div class="nav-icon">🛍</div><div class="nav-label">Шоп</div>
-        </div>
-        <div class="nav-item" onclick="tab('leaders', this)">
-            <div class="nav-icon">🏆</div><div class="nav-label">Топ</div>
-        </div>
-        <div class="nav-item" onclick="tab('promo', this)">
-            <div class="nav-icon">🎁</div><div class="nav-label">Код</div>
-        </div>
-        <div class="nav-item" onclick="tab('settings', this)">
-            <div class="nav-icon">⚙️</div><div class="nav-label">Меню</div>
-        </div>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('game', this)"><span class="nav-icon">🍊</span><span>Клик</span></div>
+        <div class="nav-item" onclick="switchTab('shop', this)"><span class="nav-icon">🛍</span><span>Шоп</span></div>
+        <div class="nav-item" onclick="switchTab('leaders', this)"><span class="nav-icon">🏆</span><span>Топ</span></div>
+        <div class="nav-item" onclick="switchTab('promo', this)"><span class="nav-icon">🎁</span><span>Код</span></div>
+        <div class="nav-item" onclick="switchTab('settings', this)"><span class="nav-icon">⚙️</span><span>Меню</span></div>
     </div>
 
     <script>
-        // --- 1. ЗАЩИТА ОТ ОШИБОК ---
-        window.onerror = function(msg) { 
-            const e = document.getElementById('err-box'); 
-            e.style.display = 'block'; e.innerText = "Error: " + msg;
-        };
-
-        // --- 2. ИНИЦИАЛИЗАЦИЯ ---
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.setHeaderColor('#101010');
-
-        let score = 0, clickPower = 1;
-        let isVib = true, currentTheme = 'premium';
-        let promos = { twizzik: false, koronka: false, vitya: false };
-        let userId = "local", userName = "Guest";
-
-        try {
-            if(tg.initDataUnsafe?.user) {
-                userId = tg.initDataUnsafe.user.id.toString();
-                userName = tg.initDataUnsafe.user.first_name;
-            }
-        } catch(e){}
-        document.getElementById('uid').innerText = userId;
-
-        // --- 3. ПОДКЛЮЧЕНИЕ БД ---
+        // ✅ ВСТАВИЛ ТВОИ КЛЮЧИ:
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -226,167 +103,237 @@
             appId: ""
         };
 
-        let db = null;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-        } catch(e) { console.log("Offline"); }
+        try { firebase.initializeApp(firebaseConfig); } catch(e) {}
+        const db = firebase.database();
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-        // --- 4. ФУНКЦИИ (ГЛОБАЛЬНЫЕ) ---
-        window.gameClick = function() {
-            score += clickPower;
-            updateUI();
-            
-            const btn = document.getElementById('clickBtn');
-            btn.style.transform = "scale(0.92)";
-            setTimeout(() => btn.style.transform = "scale(1)", 80);
-            
-            if(isVib) try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
-            if(Math.random() < 0.1) save();
+        let score = 0;
+        let clickPower = 1;
+        let isVibrationEnabled = true;
+        let promoTwizzikUsed = false;
+        let promoKoronkaUsed = false;
+        
+        let userId = "guest_" + Math.floor(Math.random() * 100000);
+        let userName = "Guest";
+        
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            userId = tg.initDataUnsafe.user.id.toString();
+            userName = tg.initDataUnsafe.user.first_name;
         }
 
-        window.save = function() {
-            const data = { score, power: clickPower, promos, theme: currentTheme, vib: isVib };
-            localStorage.setItem('mandarin_final', JSON.stringify(data));
-            if(db) db.ref('players/' + userId).update({ name: userName, score, power: clickPower, promoState: promos }).catch(()=>{});
+        const upgrades = [
+            { name: "Палец", power: 1, cost: 100 },
+            { name: "Кастет", power: 5, cost: 500 },
+            { name: "Мышка", power: 15, cost: 1500 },
+            { name: "Клавиатура", power: 40, cost: 3500 },
+            { name: "Макросы", power: 80, cost: 6000 },
+            { name: "Друг", power: 150, cost: 10000 },
+            { name: "Семья", power: 300, cost: 25000 },
+            { name: "Офис", power: 600, cost: 50000 },
+            { name: "Скрипт", power: 1200, cost: 120000 },
+            { name: "Хакер", power: 2500, cost: 300000 },
+            { name: "Видеокарта", power: 5000, cost: 700000 },
+            { name: "Процессор", power: 10000, cost: 1500000 },
+            { name: "Сервер", power: 25000, cost: 4000000 },
+            { name: "Ботнет", power: 60000, cost: 10000000 },
+            { name: "Майнинг", power: 150000, cost: 25000000 },
+            { name: "Крипта", power: 350000, cost: 60000000 },
+            { name: "Нейросеть", power: 800000, cost: 150000000 },
+            { name: "Дата-центр", power: 2000000, cost: 400000000 },
+            { name: "ИИ", power: 5000000, cost: 1000000000 },
+            { name: "Стартап", power: 12000000, cost: 3000000000 },
+            { name: "Корпорация", power: 30000000, cost: 8000000000 },
+            { name: "Спутник", power: 75000000, cost: 20000000000 },
+            { name: "Ракета", power: 200000000, cost: 60000000000 },
+            { name: "SpaceX", power: 500000000, cost: 150000000000 },
+            { name: "Луна", power: 1200000000, cost: 400000000000 },
+            { name: "Марс", power: 3000000000, cost: 1000000000000 }, 
+            { name: "Колония", power: 8000000000, cost: 3000000000000 },
+            { name: "Планета", power: 20000000000, cost: 8000000000000 },
+            { name: "Звезда", power: 50000000000, cost: 25000000000000 },
+            { name: "Солнце", power: 120000000000, cost: 70000000000000 },
+            { name: "Черная Дыра", power: 300000000000, cost: 200000000000000 },
+            { name: "Сверхновая", power: 800000000000, cost: 600000000000000 },
+            { name: "Туманность", power: 2000000000000, cost: 2000000000000000 }, 
+            { name: "Галактика", power: 5000000000000, cost: 6000000000000000 },
+            { name: "Млечный Путь", power: 12000000000000, cost: 20000000000000000 },
+            { name: "Квазар", power: 30000000000000, cost: 80000000000000000 },
+            { name: "Вселенная", power: 80000000000000, cost: 250000000000000000 },
+            { name: "Мультивселенная", power: 200000000000000, cost: 750000000000000000 },
+            { name: "Параллель", power: 500000000000000, cost: 2500000000000000000 }, 
+            { name: "Измерение X", power: 1200000000000000, cost: 8000000000000000000 },
+            { name: "Квант. Поле", power: 3000000000000000, cost: 25000000000000000000 },
+            { name: "Время", power: 8000000000000000, cost: 80000000000000000000 },
+            { name: "Материя", power: 20000000000000000, cost: 250000000000000000000 },
+            { name: "Антиматерия", power: 50000000000000000, cost: 800000000000000000000 },
+            { name: "Пустота", power: 120000000000000000, cost: 3000000000000000000000 }, 
+            { name: "Матрица", power: 300000000000000000, cost: 10000000000000000000000 },
+            { name: "Перчатка Таноса", power: 800000000000000000, cost: 35000000000000000000000 },
+            { name: "Реальность", power: 2000000000000000000, cost: 100000000000000000000000 },
+            { name: "Создатель", power: 5000000000000000000, cost: 400000000000000000000000 },
+            { name: "Сила Twizzik", power: 9999999999999999999, cost: 999999999999999999999999 }
+        ];
+
+        function initGame() {
+            db.ref('players/' + userId).once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    score = parseFloat(data.score) || 0;
+                    clickPower = parseFloat(data.power) || 1;
+                    if(data.promoTwizzik) promoTwizzikUsed = data.promoTwizzik;
+                    if(data.promoKoronka) promoKoronkaUsed = data.promoKoronka;
+                } else {
+                    if(localStorage.getItem('score')) {
+                        score = parseFloat(localStorage.getItem('score'));
+                        clickPower = parseFloat(localStorage.getItem('power'));
+                        promoTwizzikUsed = localStorage.getItem('promo_twizzik_used') === 'true';
+                        promoKoronkaUsed = localStorage.getItem('promo_koronka_used') === 'true';
+                    }
+                }
+                document.getElementById('loading-screen').style.display = 'none';
+                updateUI();
+            }).catch((error) => {
+                document.getElementById('loading-screen').style.display = 'none';
+                if(localStorage.getItem('score')) {
+                    score = parseFloat(localStorage.getItem('score'));
+                    clickPower = parseFloat(localStorage.getItem('power'));
+                }
+                updateUI();
+            });
+            if(localStorage.getItem('vibration')) isVibrationEnabled = localStorage.getItem('vibration') === 'true';
         }
 
-        window.buy = function(p, c) {
-            if(score >= c) {
-                score -= c; clickPower += p;
-                try{ tg.HapticFeedback.notificationOccurred('success'); }catch(e){}
-                save(); updateUI(); renderShop();
-            }
+        function saveGame() {
+            localStorage.setItem('score', score);
+            localStorage.setItem('power', clickPower);
+            localStorage.setItem('vibration', isVibrationEnabled);
+            localStorage.setItem('promo_twizzik_used', promoTwizzikUsed);
+            localStorage.setItem('promo_koronka_used', promoKoronkaUsed);
         }
 
-        window.activatePromo = function() {
-            const code = document.getElementById('promoInput').value.toLowerCase().trim();
-            const msg = document.getElementById('promo-msg');
-            let r=0, s=false;
-
-            if(code === 'twizzik' && !promos.twizzik) { r=5000000000; promos.twizzik=true; enableGodMode(); s=true; }
-            else if(code === 'koronka' && !promos.koronka) { r=100000; promos.koronka=true; s=true; }
-            else if(code === 'vitya' && !promos.vitya) { r=364; promos.vitya=true; s=true; }
-            else { msg.style.color="red"; msg.innerText="Неверно"; return; }
-
-            if(s) { score += r; msg.style.color="#2ecc71"; msg.innerText="Успех!"; save(); updateUI(); }
-        }
-
-        window.toggleTheme = function() {
-            currentTheme = currentTheme === 'premium' ? 'classic' : 'premium';
-            applyTheme(); save();
-        }
-
-        function applyTheme() {
-            document.body.setAttribute('data-theme', currentTheme);
-            document.getElementById('theme-name').innerText = currentTheme === 'premium' ? 'Premium' : 'Classic';
-        }
-
-        window.resetProgress = function() {
-            if(confirm("Сброс?")) {
-                score=0; clickPower=1; promos={twizzik:false, koronka:false, vitya:false};
-                save(); location.reload();
-            }
-        }
-
-        window.toggleVibration = function() {
-            isVib = document.getElementById('vibrationToggle').checked;
-            save();
-        }
-
-        window.tab = function(t, el) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.getElementById('tab-'+t).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-            if(t === 'leaders') loadLeaders();
-        }
-
-        function loadLeaders() {
-            if(!db) { document.getElementById('leaders-list').innerHTML = "Оффлайн"; return; }
-            db.ref('players').orderByChild('score').limitToLast(50).on('value', snap => {
-                let html = '';
-                let arr = [];
-                snap.forEach(c => arr.push(c.val()));
-                arr.reverse();
-                arr.forEach((p, i) => {
-                    let style = p.name === userName ? "border:1px solid var(--accent)" : "";
-                    html += `<div class="card" style="${style}"><div><span class="rank-badge">#${i+1}</span><b>${p.name}</b></div><div>${format(p.score)}</div></div>`;
-                });
-                document.getElementById('leaders-list').innerHTML = html;
+        function saveToCloud() {
+            saveGame();
+            db.ref('players/' + userId).update({ 
+                name: userName, 
+                score: score,
+                power: clickPower,
+                promoTwizzik: promoTwizzikUsed,
+                promoKoronka: promoKoronkaUsed
             });
         }
 
-        function enableGodMode() { document.getElementById('brand-label').innerText = "GOD MODE"; document.getElementById('brand-label').style.color = "gold"; }
+        function doClick() {
+            score += clickPower;
+            if(isVibrationEnabled) tg.HapticFeedback.impactOccurred('light');
+            const btn = document.getElementById('clickBtn');
+            btn.style.transform = "scale(0.95)";
+            setTimeout(() => btn.style.transform = "scale(1)", 50);
+            updateUI();
+            if(Math.random() < 0.1) saveToCloud();
+        }
 
-        function format(n) {
-            if(n >= 1e24) return (n/1e24).toFixed(2) + 'Sp';
-            if(n >= 1e21) return (n/1e21).toFixed(2) + 'Sx'; 
-            if(n >= 1e18) return (n/1e18).toFixed(2) + 'Qi'; 
-            if(n >= 1e15) return (n/1e15).toFixed(2) + 'Q';
-            if(n >= 1e12) return (n/1e12).toFixed(2) + 'T';
-            if(n >= 1e9) return (n/1e9).toFixed(2) + 'B';
-            if(n >= 1e6) return (n/1e6).toFixed(2) + 'M';
-            if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
-            return Math.floor(n).toLocaleString();
+        function buy(power, cost) {
+            if (score >= cost) {
+                score -= cost;
+                clickPower += power;
+                if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('success');
+                updateUI();
+                saveToCloud();
+            } else {
+                if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error');
+            }
+        }
+
+        function activatePromo() {
+            const input = document.getElementById('promoInput');
+            const msg = document.getElementById('promo-msg');
+            const code = input.value.trim().toLowerCase();
+
+            if (code === "twizzik") {
+                if (promoTwizzikUsed) errorPromo(msg, "Уже использован!");
+                else { score += 5000000000; promoTwizzikUsed = true; successPromo(msg, "+5 МЛРД!"); }
+            } 
+            else if (code === "koronka") {
+                if (promoKoronkaUsed) errorPromo(msg, "Уже использован!");
+                else { score += 100000; promoKoronkaUsed = true; successPromo(msg, "+100,000 МОНЕТ!"); }
+            } 
+            else errorPromo(msg, "Неверный код");
+        }
+
+        function successPromo(el, txt) { saveToCloud(); updateUI(); el.style.color = "var(--accent)"; el.innerText = "✅ " + txt; if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('success'); }
+        function errorPromo(el, txt) { el.style.color = "var(--danger)"; el.innerText = "❌ " + txt; if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error'); }
+
+        function resetProgress() {
+            if(confirm("Удалить всё?")) {
+                score = 0; clickPower = 1;
+                promoTwizzikUsed = false;
+                promoKoronkaUsed = false;
+                saveToCloud(); updateUI();
+            }
+        }
+
+        function toggleVibration() {
+            isVibrationEnabled = document.getElementById('vibrationToggle').checked;
+            saveGame();
+        }
+
+        function switchTab(tab, el) {
+            document.querySelectorAll('.content').forEach(e => e.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(e => e.classList.remove('active'));
+            el.classList.add('active');
+            if(tab === 'leaders') saveToCloud();
+        }
+
+        function formatNumber(num) {
+            if (num >= 1e21) return (num / 1e21).toFixed(2) + 'Sx';
+            if (num >= 1e18) return (num / 1e18).toFixed(2) + 'Qi';
+            if (num >= 1e15) return (num / 1e15).toFixed(2) + 'Q';
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9)  return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6)  return (num / 1e6).toFixed(2) + 'M';
+            if (num >= 1e3)  return (num / 1e3).toFixed(1) + 'K';
+            return num.toLocaleString();
         }
 
         function updateUI() {
-            document.getElementById('score').innerText = format(score);
-            document.getElementById('power').innerText = format(clickPower);
-        }
-
-        // МАГАЗИН (60)
-        const upgrades = [
-            { name: "Палец", p: 1, c: 100 }, { name: "Кастет", p: 5, c: 500 }, { name: "Мышка", p: 15, c: 1500 },
-            { name: "Клава", p: 40, c: 3500 }, { name: "Макрос", p: 80, c: 6000 }, { name: "Друг", p: 150, c: 10000 },
-            { name: "Семья", p: 300, c: 25000 }, { name: "Офис", p: 600, c: 50000 }, { name: "Скрипт", p: 1200, c: 120000 },
-            { name: "Хакер", p: 2500, c: 300000 }, { name: "Видюха", p: 5000, c: 700000 }, { name: "CPU", p: 10000, c: 1500000 },
-            { name: "Сервер", p: 25000, c: 4000000 }, { name: "Ботнет", p: 60000, c: 10000000 }, { name: "Майнинг", p: 150000, c: 25000000 },
-            { name: "Крипта", p: 350000, c: 60000000 }, { name: "Нейросеть", p: 800000, c: 150000000 }, { name: "Дата-центр", p: 2000000, c: 400000000 },
-            { name: "ИИ", p: 5000000, c: 1000000000 }, { name: "Стартап", p: 12000000, c: 3000000000 }, { name: "Корпорация", p: 30000000, c: 8000000000 },
-            { name: "Холдинг", p: 55000000, c: 15000000000 }, { name: "Спутник", p: 100000000, c: 30000000000 }, { name: "МКС", p: 250000000, c: 70000000000 },
-            { name: "Ракета", p: 600000000, c: 200000000000 }, { name: "SpaceX", p: 1500000000, c: 500000000000 }, { name: "Луна", p: 4000000000, c: 1500000000000 },
-            { name: "База Луна", p: 10000000000, c: 4000000000000 }, { name: "Марс", p: 25000000000, c: 12000000000000 }, { name: "Колония", p: 70000000000, c: 35000000000000 },
-            { name: "Терраформ", p: 200000000000, c: 100000000000000 }, { name: "Планета", p: 500000000000, c: 300000000000000 }, { name: "Звезда", p: 1500000000000, c: 1000000000000000 },
-            { name: "Солнце", p: 4000000000000, c: 3000000000000000 }, { name: "Сверхновая", p: 10000000000000, c: 10000000000000000 }, { name: "Черная Дыра", p: 30000000000000, c: 35000000000000000 },
-            { name: "Квазар", p: 80000000000000, c: 100000000000000000 }, { name: "Пульсар", p: 20000000000000, c: 300000000000000000 }, { name: "Туманность", p: 60000000000000, c: 1000000000000000000 },
-            { name: "Галактика", p: 2000000000000000, c: 4000000000000000000 }, { name: "Скопление", p: 5000000000000000, c: 15000000000000000000 }, { name: "Сверхскопление", p: 15000000000000000, c: 50000000000000000000 },
-            { name: "Войд", p: 40000000000000000, c: 200000000000000000000 }, { name: "Вселенная", p: 100000000000000000, c: 500000000000000000000 }, { name: "Мультивселенная", p: 300000000000000000, c: 150000000000000000000 },
-            { name: "Параллель", p: 1000000000000000000, c: 5000000000000000000000 }, { name: "Измерение X", p: 5000000000000000000, c: 25000000000000000000000 }, { name: "Квант. Поле", p: 20000000000000000000, c: 100000000000000000000000 },
-            { name: "Время", p: 80000000000000000000, c: 500000000000000000000000 }, { name: "Пространство", p: 300000000000000000000, c: 2000000000000000000000000 }, { name: "Материя", p: 1000000000000000000000, c: 10000000000000000000000000 },
-            { name: "Антиматерия", p: 5000000000000000000000, c: 50000000000000000000000000 }, { name: "Энергия", p: 2000000000000000000000, c: 200000000000000000000000000 }, { name: "Пустота", p: 100000000000000000000000, c: 1000000000000000000000000000 },
-            { name: "Сингулярность", p: 500000000000000000000000, c: 5000000000000000000000000000 }, { name: "Матрица", p: 2000000000000000000000000, c: 25000000000000000000000000000 }, { name: "Перчатка Таноса", p: 10000000000000000000000000, c: 100000000000000000000000000000 },
-            { name: "Реальность", p: 50000000000000000000000000, c: 500000000000000000000000000000 }, { name: "Создатель", p: 200000000000000000000000000, c: 2500000000000000000000000000000 }, { name: "Сила Twizzik", p: 999999999999999999999999999, c: 9999999999999999999999999999999 }
-        ];
-
-        function renderShop() {
+            document.getElementById('score').innerText = formatNumber(score);
+            document.getElementById('power').innerText = formatNumber(clickPower);
             let html = '';
             upgrades.forEach(u => {
-                html += `<div class="card"><div><b>${u.name}</b><br><small>+${format(u.p)}</small></div><button class="buy-btn" onclick="buy(${u.p}, ${u.c})">${format(u.c)}</button></div>`;
+                let dis = score < u.cost ? 'disabled' : '';
+                html += `<div class="list-item">
+                    <div><b>${u.name}</b> <small style="opacity:0.6">+${formatNumber(u.power)}</small></div>
+                    <button class="buy-btn" ${dis} onclick="buy(${u.power}, ${u.cost})">${formatNumber(u.cost)}</button>
+                </div>`;
             });
             document.getElementById('shop-container').innerHTML = html;
         }
 
-        // 5. ЗАПУСК
-        renderShop();
-        
-        try {
-            const local = localStorage.getItem('mandarin_final');
-            if(local) {
-                const d = JSON.parse(local);
-                score = d.score || 0;
-                clickPower = d.power || 1;
-                promos = d.promos || promos;
-                currentTheme = d.theme || 'premium';
-                isVib = d.vib !== false;
-            }
-        } catch(e){}
-        
-        applyTheme();
-        if(promos.twizzik) enableGodMode();
-        document.getElementById('vibrationToggle').checked = isVib;
-        updateUI();
+        db.ref('players').orderByChild('score').limitToLast(100).on('value', (snapshot) => {
+            const list = document.getElementById('leaders-list');
+            list.innerHTML = "";
+            let players = [];
+            snapshot.forEach(c => players.push(c.val()));
+            players.reverse();
+            if (players.length === 0) list.innerHTML = "<div style='text-align:center; padding:20px; opacity:0.5;'>Пусто</div>";
+            players.forEach((p, i) => {
+                let color = i==0?'#ffd700':(i==1?'#c0c0c0':(i==2?'#cd7f32':'#fff'));
+                let isMe = p.name === userName;
+                let style = isMe ? 'border:1px solid #ff9500;background:rgba(255,149,0,0.1)' : '';
+                list.innerHTML += `<div class="leader-item" style="${style}">
+                    <div class="rank" style="color:${color}">#${i+1}</div>
+                    <div class="avatar">👤</div>
+                    <div style="flex:1; overflow:hidden;">
+                        <div style="font-weight:bold">${p.name}</div>
+                        <div style="opacity:0.6;font-size:12px">${formatNumber(p.score)}</div>
+                    </div>
+                </div>`;
+            });
+        });
 
-        if(db) {
-            db.ref
+        initGame();
+    </script>
+</body>
+</html>
