@@ -3,14 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin Clicker</title>
+    <title>Mandarin Online</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         :root {
             --bg-color: #1c1c1e;
             --card-bg: #2c2c2e;
             --text-color: #ffffff;
-            --accent: #ff9500; /* Оранжевый акцент */
+            --accent: #ff9500;
             --gold: #ffd700;
             --silver: #c0c0c0;
             --bronze: #cd7f32;
@@ -30,8 +34,7 @@
 
         /* --- HEADER --- */
         .header {
-            text-align: center;
-            padding: 15px;
+            text-align: center; padding: 15px;
             background: rgba(28, 28, 30, 0.95);
             backdrop-filter: blur(10px);
             z-index: 10;
@@ -65,7 +68,6 @@
 
         .big-button {
             width: 260px; height: 260px;
-            /* Делаем мандарин */
             background: radial-gradient(circle at 30% 30%, #ffb347, #ff8c00);
             border-radius: 50%;
             border: 6px solid #e67e22;
@@ -101,6 +103,7 @@
         .rank-1 { color: var(--gold); font-size: 20px; }
         .rank-2 { color: var(--silver); }
         .rank-3 { color: var(--bronze); }
+        
         .avatar { width: 36px; height: 36px; border-radius: 50%; background: #444; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
         .player-name { font-weight: 600; font-size: 15px; }
         .player-score { font-size: 12px; opacity: 0.6; }
@@ -134,7 +137,7 @@
     <div class="header">
         <div style="font-size: 12px; opacity: 0.5;">ТВОЙ СЧЕТ</div>
         <div class="score-value" id="score">0</div>
-        <div class="brand-hint">by twizzik</div>
+        <div class="brand-hint">online • by twizzik</div>
     </div>
 
     <div id="tab-game" class="content active">
@@ -152,8 +155,9 @@
     </div>
 
     <div id="tab-leaders" class="content">
-        <h2 style="margin-top: 0;">Топ лидеров</h2>
-        <div id="leaders-list"></div>
+        <h2 style="margin-top: 0;">🌍 Топ мира</h2>
+        <div style="font-size: 12px; opacity: 0.5; margin-bottom: 10px;">Список обновляется в реальном времени</div>
+        <div id="leaders-list">Загрузка...</div>
     </div>
 
     <div id="tab-settings" class="content">
@@ -174,7 +178,7 @@
         </div>
         
         <div style="text-align: center; margin-top: 30px; opacity: 0.3; font-size: 12px;">
-            Version 2.0 • by Twizzik
+            Version Online 3.0 • by Twizzik
         </div>
     </div>
 
@@ -194,13 +198,43 @@
     </div>
 
     <script>
-        let score = 0;
-        let clickPower = 1;
-        let isVibrationEnabled = true;
+        // ==========================================
+        // 👇 ВСТАВЬ СЮДА СВОИ КЛЮЧИ ОТ FIREBASE 👇
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
+            authDomain: "mandarin-game-edee2.firebaseapp.com",
+            databaseURL: "https://mandarin-game-edee2-default-rtdb.firebaseio.com",
+            projectId: "mandarin-game-edee2",
+            storageBucket: "",
+            messagingSenderId: "",
+            appId: ""
+        };
+        // ==========================================
+
+        // Инициализация облака
+        try {
+            firebase.initializeApp(firebaseConfig);
+        } catch(e) { console.error("Не вставлены ключи Firebase!", e); }
+        
+        const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // 🛒 НОВЫЙ СПИСОК УЛУЧШЕНИЙ (Много!)
+        let score = 0;
+        let clickPower = 1;
+        let isVibrationEnabled = true;
+
+        // Данные пользователя
+        let userId = "guest_" + Math.floor(Math.random() * 100000);
+        let userName = "Гость";
+        
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            userId = tg.initDataUnsafe.user.id.toString();
+            userName = tg.initDataUnsafe.user.first_name;
+        }
+
+        // Список товаров
         const upgrades = [
             { id: 1, name: "Крепкий палец", power: 1, cost: 100 },
             { id: 2, name: "Вторая рука", power: 5, cost: 500 },
@@ -216,21 +250,8 @@
             { id: 12, name: "Галактика", power: 100000, cost: 10000000 }
         ];
 
-        // 🏆 ФЕЙКОВЫЕ ЛИДЕРЫ (Много!)
-        const fakeLeaders = [
-            { name: "Pavel Durov", score: 99000000, avatar: "🧢" },
-            { name: "Elon Musk", score: 50000000, avatar: "🚀" },
-            { name: "Mr. Beast", score: 25000000, avatar: "🐯" },
-            { name: "Mark Zukerberg", score: 10000000, avatar: "👽" },
-            { name: "Dwayne Johnson", score: 5000000, avatar: "🗿" },
-            { name: "Deadpool", score: 2000000, avatar: "⚔️" },
-            { name: "Batman", score: 1500000, avatar: "🦇" },
-            { name: "Shrek", score: 800000, avatar: "🤢" },
-            { name: "Spiderman", score: 500000, avatar: "🕷" },
-            { name: "Notcoin User", score: 100000, avatar: "💎" }
-        ];
-
         function loadGame() {
+            // Загрузка локально
             if(localStorage.getItem('score')) {
                 score = parseInt(localStorage.getItem('score'));
                 clickPower = parseInt(localStorage.getItem('power'));
@@ -240,14 +261,23 @@
                 document.getElementById('vibrationToggle').checked = isVibrationEnabled;
             }
             renderShop();
-            renderLeaders();
             updateUI();
+            saveToCloud(); // Синхронизация при входе
         }
 
         function saveGame() {
             localStorage.setItem('score', score);
             localStorage.setItem('power', clickPower);
             localStorage.setItem('vibration', isVibrationEnabled);
+        }
+
+        // Сохранение в облако (отдельная функция)
+        function saveToCloud() {
+            saveGame(); // Сначала локально
+            db.ref('players/' + userId).set({
+                name: userName,
+                score: score
+            });
         }
 
         function doClick() {
@@ -259,8 +289,10 @@
             btn.style.transform = "scale(0.95)";
             setTimeout(() => btn.style.transform = "scale(1)", 50);
 
-            saveGame();
             updateUI();
+            
+            // Сохраняем в облако не каждый клик (чтобы не лагало), а раз в 10 кликов
+            if(score % 10 === 0) saveToCloud();
         }
 
         function buy(power, cost) {
@@ -268,9 +300,10 @@
                 score -= cost;
                 clickPower += power;
                 if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('success');
-                saveGame();
+                
                 renderShop();
                 updateUI();
+                saveToCloud(); // После покупки сохраняем сразу
             } else {
                 if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error');
             }
@@ -289,7 +322,6 @@
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             element.classList.add('active');
 
-            if(tab === 'leaders') renderLeaders();
             if(isVibrationEnabled) tg.HapticFeedback.selectionChanged();
         }
 
@@ -303,61 +335,63 @@
             let html = '';
             upgrades.forEach(u => {
                 const disabled = score < u.cost ? 'disabled' : '';
-                // Форматируем числа (10 000 вместо 10000)
-                const costFmt = u.cost.toLocaleString();
-                const powerFmt = u.power.toLocaleString();
-                
                 html += `
                 <div class="list-item">
                     <div>
                         <div style="font-weight:bold; font-size:15px;">${u.name}</div>
-                        <div style="font-size:11px; opacity:0.6; margin-top:2px;">+${powerFmt} к клику</div>
+                        <div style="font-size:11px; opacity:0.6; margin-top:2px;">+${u.power.toLocaleString()} к клику</div>
                     </div>
                     <button class="buy-btn" ${disabled} onclick="buy(${u.power}, ${u.cost})">
-                        ${costFmt} 💰
+                        ${u.cost.toLocaleString()} 💰
                     </button>
                 </div>`;
             });
             document.getElementById('shop-container').innerHTML = html;
         }
 
-        function renderLeaders() {
-            let allPlayers = [...fakeLeaders];
-            let myName = tg.initDataUnsafe.user ? tg.initDataUnsafe.user.first_name : "Я (Ты)";
+        // --- ГЛАВНАЯ МАГИЯ: СЛУШАЕМ ОБЛАКО ---
+        db.ref('players').orderByChild('score').limitToLast(50).on('value', (snapshot) => {
+            const list = document.getElementById('leaders-list');
+            list.innerHTML = "";
             
-            // Добавляем тебя
-            allPlayers.push({ name: myName, score: score, avatar: "👤", isMe: true });
+            let players = [];
+            snapshot.forEach((child) => {
+                players.push(child.val());
+            });
 
-            // Сортировка
-            allPlayers.sort((a, b) => b.score - a.score);
+            // Firebase отдает по возрастанию, переворачиваем
+            players.reverse(); 
 
-            let html = '';
-            allPlayers.forEach((player, index) => {
+            players.forEach((player, index) => {
                 let rankClass = '';
-                if (index === 0) rankClass = 'rank-1';
-                if (index === 1) rankClass = 'rank-2';
-                if (index === 2) rankClass = 'rank-3';
+                let avatar = "👤";
+                if (index === 0) { rankClass = 'rank-1'; avatar = "👑"; }
+                if (index === 1) { rankClass = 'rank-2'; avatar = "🥈"; }
+                if (index === 2) { rankClass = 'rank-3'; avatar = "🥉"; }
 
-                let borderStyle = player.isMe ? 'border: 1px solid var(--accent); background: rgba(255,149,0,0.1);' : '';
-                let nameStyle = player.isMe ? 'color: var(--accent);' : '';
+                // Подсветка себя
+                let isMe = (player.name === userName && player.score === score);
+                let borderStyle = isMe ? 'border: 1px solid var(--accent); background: rgba(255,149,0,0.1);' : '';
+                let nameStyle = isMe ? 'color: var(--accent);' : '';
 
-                html += `
+                list.innerHTML += `
                 <div class="leader-item" style="${borderStyle}">
                     <div class="rank ${rankClass}">#${index + 1}</div>
-                    <div class="avatar">${player.avatar}</div>
+                    <div class="avatar">${avatar}</div>
                     <div style="flex:1;">
                         <div class="player-name" style="${nameStyle}">${player.name}</div>
                         <div class="player-score">${player.score.toLocaleString()}</div>
                     </div>
                 </div>`;
             });
-            document.getElementById('leaders-list').innerHTML = html;
-        }
+        });
 
         function resetProgress() {
             if(confirm("Удалить весь прогресс?")) {
                 score = 0; clickPower = 1;
-                saveGame(); loadGame();
+                saveGame(); 
+                saveToCloud(); // В облаке тоже обнуляем
+                loadGame();
             }
         }
 
