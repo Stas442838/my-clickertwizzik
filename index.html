@@ -172,7 +172,7 @@
             { name: "Перчатка Таноса", power: 800000000000000000, cost: 35000000000000000000000 },
             { name: "Реальность", power: 2000000000000000000, cost: 100000000000000000000000 },
             { name: "Создатель", power: 5000000000000000000, cost: 400000000000000000000000 },
-            { name: "Сила Twizzik", power: 9999999999999999999, cost: 999999999999999999999999 }
+            { name: "Все_Могущий_Twizzik", power: 9999999999999999999, cost: 999999999999999999999999 }
         ];
 
         function initGame() {
@@ -189,6 +189,7 @@
                         clickPower = parseFloat(localStorage.getItem('power'));
                         promoTwizzikUsed = localStorage.getItem('promo_twizzik_used') === 'true';
                         promoKoronkaUsed = localStorage.getItem('promo_koronka_used') === 'true';
+                        promoVityaUsed = localStorage.getItem('promo_Витя_пидрила_user') === 'true';
                     }
                 }
                 document.getElementById('loading-screen').style.display = 'none';
