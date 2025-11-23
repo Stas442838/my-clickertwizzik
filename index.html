@@ -19,6 +19,7 @@
             --silver: #c0c0c0;
             --bronze: #cd7f32;
             --danger: #ff3b30;
+            --input-bg: #3a3a3c;
         }
 
         body {
@@ -42,8 +43,9 @@
         }
 
         .score-value { 
-            font-size: 42px; font-weight: 800; color: var(--gold);
+            font-size: 36px; font-weight: 800; color: var(--gold);
             text-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            word-wrap: break-word;
         }
         
         .brand-hint {
@@ -67,7 +69,7 @@
         #tab-game { align-items: center; justify-content: center; }
 
         .big-button {
-            width: 260px; height: 260px;
+            width: 250px; height: 250px;
             background: radial-gradient(circle at 30% 30%, #ffb347, #ff8c00);
             border-radius: 50%;
             border: 6px solid #e67e22;
@@ -78,7 +80,7 @@
             position: relative;
         }
         .big-button:active { transform: scale(0.95); }
-        .big-button span { font-size: 100px; pointer-events: none; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2)); }
+        .big-button span { font-size: 90px; pointer-events: none; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.2)); }
 
         /* --- SHOP ITEMS --- */
         .list-item {
@@ -105,8 +107,23 @@
         .rank-3 { color: var(--bronze); }
         
         .avatar { width: 36px; height: 36px; border-radius: 50%; background: #444; margin-right: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
-        .player-name { font-weight: 600; font-size: 15px; }
+        .player-name { font-weight: 600; font-size: 14px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 120px;}
         .player-score { font-size: 12px; opacity: 0.6; }
+
+        /* --- PROMO CODE --- */
+        .promo-container {
+            background: var(--card-bg); padding: 20px; border-radius: 20px; text-align: center;
+        }
+        .promo-input {
+            width: 80%; padding: 15px; border-radius: 10px; border: none;
+            background: var(--input-bg); color: white; font-size: 18px; text-align: center;
+            margin-bottom: 15px; outline: none; border: 2px solid transparent;
+        }
+        .promo-input:focus { border-color: var(--accent); }
+        .promo-btn {
+            width: 100%; padding: 15px; background: var(--accent); color: black;
+            font-weight: bold; font-size: 16px; border: none; border-radius: 10px; cursor: pointer;
+        }
 
         /* --- SETTINGS --- */
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
@@ -123,13 +140,13 @@
             backdrop-filter: blur(20px);
             border-radius: 25px;
             display: flex; justify-content: space-around;
-            padding: 12px 0;
+            padding: 10px 0;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             z-index: 100;
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 10px; transition: 0.2s; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 9px; transition: 0.2s; }
         .nav-item.active { color: var(--accent); transform: scale(1.1); }
-        .nav-icon { font-size: 22px; margin-bottom: 2px; }
+        .nav-icon { font-size: 20px; margin-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -156,29 +173,32 @@
 
     <div id="tab-leaders" class="content">
         <h2 style="margin-top: 0;">🌍 Топ мира</h2>
-        <div style="font-size: 12px; opacity: 0.5; margin-bottom: 10px;">Список обновляется в реальном времени</div>
+        <div style="font-size: 12px; opacity: 0.5; margin-bottom: 10px;">Обновляется при входе</div>
         <div id="leaders-list">Загрузка...</div>
+    </div>
+
+    <div id="tab-promo" class="content">
+        <h2 style="margin-top: 0;">Промокоды</h2>
+        <div style="font-size: 13px; opacity: 0.6; margin-bottom: 20px;">Введи секретный код от Twizzik</div>
+        
+        <div class="promo-container">
+            <input type="text" id="promoInput" class="promo-input" placeholder="Код сюда...">
+            <button class="promo-btn" onclick="activatePromo()">АКТИВИРОВАТЬ</button>
+        </div>
+        <div id="promo-msg" style="text-align:center; margin-top:15px; font-weight:bold;"></div>
     </div>
 
     <div id="tab-settings" class="content">
         <h2>Настройки</h2>
-        
         <div class="list-item">
-            <div>
-                <div style="font-weight: bold;">Вибрация</div>
-            </div>
+            <div><div style="font-weight: bold;">Вибрация</div></div>
             <label class="switch">
                 <input type="checkbox" id="vibrationToggle" checked onchange="toggleVibration()">
                 <span class="slider"></span>
             </label>
         </div>
-
         <div class="list-item" onclick="resetProgress()" style="justify-content: center; color: var(--danger); cursor: pointer; margin-top: 20px;">
             <span>🗑 Сбросить весь прогресс</span>
-        </div>
-        
-        <div style="text-align: center; margin-top: 30px; opacity: 0.3; font-size: 12px;">
-            Version Online 3.0 • by Twizzik
         </div>
     </div>
 
@@ -192,8 +212,11 @@
         <div class="nav-item" onclick="switchTab('leaders', this)">
             <span class="nav-icon">🏆</span><span>Топ</span>
         </div>
+        <div class="nav-item" onclick="switchTab('promo', this)">
+            <span class="nav-icon">🎁</span><span>Промо</span>
+        </div>
         <div class="nav-item" onclick="switchTab('settings', this)">
-            <span class="nav-icon">⚙️</span><span>Опции</span>
+            <span class="nav-icon">⚙️</span><span>Меню</span>
         </div>
     </div>
 
@@ -212,11 +235,7 @@
         };
         // ==========================================
 
-        // Инициализация облака
-        try {
-            firebase.initializeApp(firebaseConfig);
-        } catch(e) { console.error("Не вставлены ключи Firebase!", e); }
-        
+        try { firebase.initializeApp(firebaseConfig); } catch(e) {}
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
@@ -225,33 +244,31 @@
         let clickPower = 1;
         let isVibrationEnabled = true;
 
-        // Данные пользователя
+        // Данные игрока
         let userId = "guest_" + Math.floor(Math.random() * 100000);
-        let userName = "Гость";
-        
+        let userName = "Guest";
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             userId = tg.initDataUnsafe.user.id.toString();
             userName = tg.initDataUnsafe.user.first_name;
         }
 
-        // Список товаров
+        // Товары
         const upgrades = [
-            { id: 1, name: "Крепкий палец", power: 1, cost: 100 },
-            { id: 2, name: "Вторая рука", power: 5, cost: 500 },
-            { id: 3, name: "Друг с телефоном", power: 10, cost: 1000 },
-            { id: 4, name: "Кликающий кот", power: 25, cost: 2500 },
+            { id: 1, name: "Палец", power: 1, cost: 100 },
+            { id: 2, name: "Рука", power: 5, cost: 500 },
+            { id: 3, name: "Друг", power: 10, cost: 1000 },
+            { id: 4, name: "Кот", power: 25, cost: 2500 },
             { id: 5, name: "Перфоратор", power: 50, cost: 5000 },
             { id: 6, name: "Хакер", power: 100, cost: 10000 },
-            { id: 7, name: "Биткоин ферма", power: 500, cost: 50000 },
-            { id: 8, name: "Завод мандаринов", power: 1000, cost: 100000 },
+            { id: 7, name: "Ферма", power: 500, cost: 50000 },
+            { id: 8, name: "Завод", power: 1000, cost: 100000 },
             { id: 9, name: "Илон Маск", power: 5000, cost: 500000 },
-            { id: 10, name: "Ракета SpaceX", power: 10000, cost: 1000000 },
-            { id: 11, name: "Своя Планета", power: 50000, cost: 5000000 },
+            { id: 10, name: "SpaceX", power: 10000, cost: 1000000 },
+            { id: 11, name: "Планета", power: 50000, cost: 5000000 },
             { id: 12, name: "Галактика", power: 100000, cost: 10000000 }
         ];
 
         function loadGame() {
-            // Загрузка локально
             if(localStorage.getItem('score')) {
                 score = parseInt(localStorage.getItem('score'));
                 clickPower = parseInt(localStorage.getItem('power'));
@@ -260,9 +277,8 @@
                 isVibrationEnabled = localStorage.getItem('vibration') === 'true';
                 document.getElementById('vibrationToggle').checked = isVibrationEnabled;
             }
-            renderShop();
             updateUI();
-            saveToCloud(); // Синхронизация при входе
+            saveToCloud();
         }
 
         function saveGame() {
@@ -271,9 +287,8 @@
             localStorage.setItem('vibration', isVibrationEnabled);
         }
 
-        // Сохранение в облако (отдельная функция)
         function saveToCloud() {
-            saveGame(); // Сначала локально
+            saveGame();
             db.ref('players/' + userId).set({
                 name: userName,
                 score: score
@@ -283,15 +298,12 @@
         function doClick() {
             score += clickPower;
             if(isVibrationEnabled) tg.HapticFeedback.impactOccurred('light');
-            
-            // Анимация
             const btn = document.getElementById('clickBtn');
             btn.style.transform = "scale(0.95)";
             setTimeout(() => btn.style.transform = "scale(1)", 50);
-
             updateUI();
             
-            // Сохраняем в облако не каждый клик (чтобы не лагало), а раз в 10 кликов
+            // Сохраняем не каждый раз, но часто
             if(score % 10 === 0) saveToCloud();
         }
 
@@ -300,19 +312,38 @@
                 score -= cost;
                 clickPower += power;
                 if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('success');
-                
-                renderShop();
                 updateUI();
-                saveToCloud(); // После покупки сохраняем сразу
+                saveToCloud(); // Сохраняем сразу при покупке
             } else {
                 if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error');
             }
         }
 
-        function toggleVibration() {
-            isVibrationEnabled = document.getElementById('vibrationToggle').checked;
-            saveGame();
-            if(isVibrationEnabled) tg.HapticFeedback.impactOccurred('medium');
+        // --- ЛОГИКА ПРОМОКОДОВ ---
+        function activatePromo() {
+            const input = document.getElementById('promoInput');
+            const msg = document.getElementById('promo-msg');
+            const code = input.value.trim().toLowerCase();
+
+            if (code === "twizzik") {
+                if (localStorage.getItem('promo_twizzik_used')) {
+                    msg.style.color = "var(--danger)";
+                    msg.innerText = "⛔️ Ты уже использовал этот код!";
+                    if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error');
+                } else {
+                    score += 5000000000;
+                    localStorage.setItem('promo_twizzik_used', 'true');
+                    saveToCloud();
+                    updateUI();
+                    msg.style.color = "var(--accent)";
+                    msg.innerText = "✅ УСПЕШНО! +5,000,000,000 МОНЕТ!";
+                    if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('success');
+                }
+            } else {
+                msg.style.color = "var(--danger)";
+                msg.innerText = "❌ Неверный код";
+                if(isVibrationEnabled) tg.HapticFeedback.notificationOccurred('error');
+            }
         }
 
         function switchTab(tab, element) {
@@ -323,6 +354,17 @@
             element.classList.add('active');
 
             if(isVibrationEnabled) tg.HapticFeedback.selectionChanged();
+
+            // 🔥 ФИШКА: Если открыли ТОП, сразу отправляем данные в облако
+            if (tab === 'leaders') {
+                saveToCloud();
+            }
+        }
+
+        function toggleVibration() {
+            isVibrationEnabled = document.getElementById('vibrationToggle').checked;
+            saveGame();
+            if(isVibrationEnabled) tg.HapticFeedback.impactOccurred('medium');
         }
 
         function updateUI() {
@@ -338,8 +380,8 @@
                 html += `
                 <div class="list-item">
                     <div>
-                        <div style="font-weight:bold; font-size:15px;">${u.name}</div>
-                        <div style="font-size:11px; opacity:0.6; margin-top:2px;">+${u.power.toLocaleString()} к клику</div>
+                        <div style="font-weight:bold; font-size:14px;">${u.name}</div>
+                        <div style="font-size:11px; opacity:0.6;">+${u.power.toLocaleString()}</div>
                     </div>
                     <button class="buy-btn" ${disabled} onclick="buy(${u.power}, ${u.cost})">
                         ${u.cost.toLocaleString()} 💰
@@ -349,51 +391,44 @@
             document.getElementById('shop-container').innerHTML = html;
         }
 
-        // --- ГЛАВНАЯ МАГИЯ: СЛУШАЕМ ОБЛАКО ---
+        function resetProgress() {
+            if(confirm("Удалить весь прогресс?")) {
+                score = 0; clickPower = 1;
+                localStorage.removeItem('promo_twizzik_used'); // Сброс промокода тоже
+                saveToCloud();
+                loadGame();
+            }
+        }
+
+        // Загрузка топа
         db.ref('players').orderByChild('score').limitToLast(50).on('value', (snapshot) => {
             const list = document.getElementById('leaders-list');
             list.innerHTML = "";
-            
             let players = [];
-            snapshot.forEach((child) => {
-                players.push(child.val());
-            });
-
-            // Firebase отдает по возрастанию, переворачиваем
-            players.reverse(); 
+            snapshot.forEach((child) => players.push(child.val()));
+            players.reverse();
 
             players.forEach((player, index) => {
-                let rankClass = '';
-                let avatar = "👤";
+                let rankClass = '', avatar = "👤";
                 if (index === 0) { rankClass = 'rank-1'; avatar = "👑"; }
                 if (index === 1) { rankClass = 'rank-2'; avatar = "🥈"; }
                 if (index === 2) { rankClass = 'rank-3'; avatar = "🥉"; }
 
-                // Подсветка себя
-                let isMe = (player.name === userName && player.score === score);
-                let borderStyle = isMe ? 'border: 1px solid var(--accent); background: rgba(255,149,0,0.1);' : '';
+                let isMe = (player.name === userName);
+                let style = isMe ? 'border: 1px solid var(--accent); background: rgba(255,149,0,0.1);' : '';
                 let nameStyle = isMe ? 'color: var(--accent);' : '';
 
                 list.innerHTML += `
-                <div class="leader-item" style="${borderStyle}">
+                <div class="leader-item" style="${style}">
                     <div class="rank ${rankClass}">#${index + 1}</div>
                     <div class="avatar">${avatar}</div>
-                    <div style="flex:1;">
+                    <div style="flex:1; overflow:hidden;">
                         <div class="player-name" style="${nameStyle}">${player.name}</div>
                         <div class="player-score">${player.score.toLocaleString()}</div>
                     </div>
                 </div>`;
             });
         });
-
-        function resetProgress() {
-            if(confirm("Удалить весь прогресс?")) {
-                score = 0; clickPower = 1;
-                saveGame(); 
-                saveToCloud(); // В облаке тоже обнуляем
-                loadGame();
-            }
-        }
 
         loadGame();
     </script>
