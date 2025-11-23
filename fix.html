@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin Titanium v29</title>
+    <title>Mandarin Ultra</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -11,7 +11,6 @@
     <style>
         /* --- ТЕМЫ --- */
         :root {
-            /* Premium */
             --bg: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             --card: rgba(255, 255, 255, 0.08);
             --border: rgba(255, 255, 255, 0.1);
@@ -23,7 +22,6 @@
         }
 
         [data-theme="classic"] {
-            /* Classic */
             --bg: #1c1c1e; --card: #2c2c2e; --border: #333;
             --text: #fff; --accent: #ff9500; --gold: #ffd700;
             --nav: #222; --shadow: none;
@@ -34,81 +32,64 @@
             background: var(--bg); color: var(--text);
             height: 100vh; display: flex; flex-direction: column;
             overflow: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
-            transition: background 0.5s;
         }
 
-        /* --- ЭКРАН ЗАГРУЗКИ (ИСЧЕЗНЕТ САМ) --- */
-        #loading-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 99999;
-            display: flex; justify-content: center; align-items: center;
-            pointer-events: none; /* НЕ БЛОКИРУЕТ НАЖАТИЯ */
-            animation: fadeOut 0.5s ease-out 1.5s forwards;
+        /* ПОЛЕ ОШИБОК (ЧТОБЫ ТЫ ВИДЕЛ, ЕСЛИ ЧТО-ТО НЕ ТАК) */
+        #debug-err {
+            position: fixed; top: 0; left: 0; width: 100%; background: rgba(255,0,0,0.8);
+            color: white; font-size: 10px; padding: 2px; display: none; z-index: 999999;
         }
-        @keyframes fadeOut { to { opacity: 0; visibility: hidden; } }
 
-        .spinner {
-            width: 50px; height: 50px; border: 4px solid #333;
-            border-top: 4px solid var(--accent); border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
-
-        /* --- ИНТЕРФЕЙС --- */
         .header { text-align: center; padding: 15px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border); }
-        .score-val { font-size: 36px; font-weight: 900; background: var(--gold); -webkit-background-clip: text; color: transparent; margin: 5px 0; text-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .score-val { font-size: 38px; font-weight: 900; background: var(--gold); -webkit-background-clip: text; color: transparent; margin: 5px 0; text-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .brand-pill { font-size: 10px; padding: 4px 10px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); opacity: 0.7; }
 
         .content { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 100px; display: none; }
-        .content.active { display: flex; flex-direction: column; animation: fadeIn 0.2s; }
-        @keyframes fadeIn { from {opacity:0; transform: translateY(5px);} to {opacity:1; transform: translateY(0);} }
+        .content.active { display: flex; flex-direction: column; }
 
         .big-btn {
-            width: 250px; height: 250px;
+            width: 240px; height: 240px;
             background: radial-gradient(circle at 30% 30%, #ffb347, #ff8008);
             border-radius: 50%; border: 5px solid rgba(255,255,255,0.1);
             box-shadow: var(--shadow);
             display: flex; align-items: center; justify-content: center;
-            margin: 20px auto; cursor: pointer; position: relative;
-            z-index: 10; transition: transform 0.05s;
+            margin: 20px auto; cursor: pointer; position: relative; z-index: 10;
         }
-        .big-btn:active { transform: scale(0.92); }
+        .big-btn:active { transform: scale(0.95); }
         .big-btn span { font-size: 130px; pointer-events: none; }
 
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
         .buy-btn { background: var(--accent); color: #000; border: none; padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 11px; min-width: 70px; }
         .buy-btn:disabled { background: #444; color: #888; }
 
-        .nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--nav); backdrop-filter: blur(10px); border-radius: 20px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #777; font-size: 9px; transition: 0.2s; flex:1; }
-        .nav-item.active { color: var(--accent); transform: translateY(-2px); }
+        .nav { position: fixed; bottom: 20px; left: 20px; right: 20px; background: var(--nav); border-radius: 20px; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #777; font-size: 9px; flex:1; }
+        .nav-item.active { color: var(--accent); }
         .nav-icon { font-size: 22px; margin-bottom: 2px; }
 
         .promo-input { width: 80%; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(0,0,0,0.3); color: white; text-align: center; margin: 0 auto 10px; display: block; font-size: 16px; }
         .promo-btn { width: 100%; padding: 12px; background: var(--accent); border: none; border-radius: 10px; font-weight: bold; color: #000; }
-
+        
         .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #444; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--accent); }
         input:checked + .slider:before { transform: translateX(22px); }
-        
-        .rank-badge { width: 25px; font-weight: bold; text-align: center; margin-right: 10px; }
     </style>
 </head>
 <body>
 
-    <div id="loading-screen"><div class="spinner"></div></div>
+    <div id="debug-err"></div>
 
     <div class="header">
         <div style="font-size: 10px; opacity: 0.5;">БАЛАНС</div>
         <div class="score-val" id="score">0</div>
-        <div class="brand-pill" id="brand-label">TITANIUM v29</div>
+        <div class="brand-pill" id="brand-label">ULTRA v32</div>
     </div>
 
     <div id="tab-game" class="content active">
-        <div class="big-btn" id="clickBtn" onclick="doClick()"><span>🍊</span></div>
+        <div class="big-btn" id="clickBtn" onclick="clickCoin()"><span>🍊</span></div>
         <div style="text-align:center; margin-top:20px;">Сила: <b id="power" style="color:var(--accent)">1</b></div>
     </div>
 
@@ -119,13 +100,13 @@
 
     <div id="tab-leaders" class="content">
         <h2>Топ</h2>
-        <div id="leaders-list" style="margin-top:15px;">Загрузка...</div>
+        <div id="leaders-list">Загрузка...</div>
     </div>
 
     <div id="tab-promo" class="content">
         <div style="background:var(--card); padding:20px; border-radius:20px; margin-top:40px; border:1px solid var(--border)">
             <h2 style="margin-top:0">Коды</h2>
-            <input type="text" id="promoInput" class="promo-input" placeholder="Код...">
+            <input type="text" id="promoInput" class="promo-input" placeholder="Введи код...">
             <button class="promo-btn" onclick="activatePromo()">OK</button>
             <div id="promo-msg" style="margin-top:10px; font-weight:bold"></div>
         </div>
@@ -156,25 +137,32 @@
     </div>
 
     <script>
-        // --- 1. ПЕРЕМЕННЫЕ (ГЛОБАЛЬНЫЕ) ---
+        // --- 1. ГЛОБАЛЬНЫЙ ПЕРЕХВАТ ОШИБОК ---
+        window.onerror = function(msg, url, line) {
+            document.getElementById('debug-err').style.display = 'block';
+            document.getElementById('debug-err').innerText = "Error: " + msg;
+        };
+
+        // --- 2. ПЕРЕМЕННЫЕ ---
         let score = 0;
         let clickPower = 1;
         let isVibration = true;
         let currentTheme = 'premium';
         let promoState = { twizzik: false, koronka: false, vitya: false };
-        let userId = "local";
-        let userName = "Guest";
-
-        // --- 2. ИНИЦИАЛИЗАЦИЯ ---
+        
         const tg = window.Telegram.WebApp;
         tg.expand();
-        if(tg.initDataUnsafe?.user) {
-            userId = tg.initDataUnsafe.user.id.toString();
-            userName = tg.initDataUnsafe.user.first_name;
-        }
+        let userId = "local";
+        let userName = "Guest";
+        try {
+            if(tg.initDataUnsafe?.user) {
+                userId = tg.initDataUnsafe.user.id.toString();
+                userName = tg.initDataUnsafe.user.first_name;
+            }
+        } catch(e){}
         document.getElementById('uid').innerText = userId;
 
-        // --- 3. FIREBASE (БЕЗОПАСНОЕ ПОДКЛЮЧЕНИЕ) ---
+        // --- 3. FIREBASE (Безопасный) ---
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -187,84 +175,115 @@
 
         let db = null;
         try {
-            if(typeof firebase !== 'undefined') {
-                firebase.initializeApp(firebaseConfig);
-                db = firebase.database();
-            }
-        } catch(e) { console.error(e); }
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+        } catch(e) {
+            console.log("Играет оффлайн");
+        }
 
-        // --- 4. ФУНКЦИИ ИГРЫ (ОНИ ТЕПЕРЬ "ЖЕЛЕЗНЫЕ") ---
+        // --- 4. ФУНКЦИИ (Объявлены глобально) ---
         
-        window.doClick = function() {
+        window.clickCoin = function() {
             score += clickPower;
             updateUI();
             
             // Анимация
             const btn = document.getElementById('clickBtn');
-            btn.style.transform = "scale(0.95)";
+            btn.style.transform = "scale(0.9)";
             setTimeout(() => btn.style.transform = "scale(1)", 50);
             
             if(isVibration) try { tg.HapticFeedback.impactOccurred('light'); } catch(e){}
             
+            // Сохранение (с защитой от спама)
             if(Math.random() < 0.1) save();
         }
 
         window.save = function() {
-            const data = {
-                score: score,
-                power: clickPower,
-                promos: promoState,
-                theme: currentTheme,
-                vib: isVibration
-            };
-            localStorage.setItem('mandarin_save', JSON.stringify(data));
+            const data = { score, power: clickPower, promos: promoState, theme: currentTheme, vib: isVibration };
+            localStorage.setItem('mandarin_save_v2', JSON.stringify(data));
             
             if(db) {
                 db.ref('players/' + userId).update({
-                    name: userName,
-                    score: score,
-                    power: clickPower,
-                    promoState: promoState
+                    name: userName, score: score, power: clickPower, promoState: promoState
                 }).catch(()=>{});
             }
         }
 
-        window.load = function() {
-            // 1. Сразу грузим из памяти
-            const local = localStorage.getItem('mandarin_save');
-            if(local) {
-                const d = JSON.parse(local);
-                score = d.score || 0;
-                clickPower = d.power || 1;
-                promoState = d.promos || { twizzik: false, koronka: false, vitya: false };
-                currentTheme = d.theme || 'premium';
-                isVibration = d.vib !== false;
-            }
-            applyTheme();
-            if(promoState.twizzik) enableGodMode();
-            updateUI();
-            document.getElementById('vibrationToggle').checked = isVibration;
-
-            // 2. Потом из облака
-            if(db) {
-                db.ref('players/' + userId).once('value').then(snap => {
-                    const d = snap.val();
-                    if(d) {
-                        // Если в облаке прогресс лучше - берем его
-                        if((d.score || 0) > score) {
-                            score = parseFloat(d.score);
-                            clickPower = parseFloat(d.power);
-                            promoState = d.promoState || promoState;
-                            updateUI();
-                            if(promoState.twizzik) enableGodMode();
-                        }
-                    }
-                });
-                loadLeaders();
+        window.buy = function(p, c) {
+            if(score >= c) {
+                score -= c; clickPower += p;
+                try{ tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
+                save(); updateUI(); renderShop();
             }
         }
 
-        window.loadLeaders = function() {
+        window.activatePromo = function() {
+            const code = document.getElementById('promoInput').value.toLowerCase().trim();
+            const msg = document.getElementById('promo-msg');
+            let reward = 0; let success = false;
+
+            if(code === 'twizzik' && !promoState.twizzik) { reward=5000000000; promoState.twizzik=true; success=true; enableGodMode(); }
+            else if(code === 'koronka' && !promoState.koronka) { reward=100000; promoState.koronka=true; success=true; }
+            else if(code === 'vitya' && !promoState.vitya) { reward=364; promoState.vitya=true; success=true; }
+            else { msg.style.color="red"; msg.innerText="Ошибка"; return; }
+
+            if(success) {
+                score += reward;
+                msg.style.color="lime"; msg.innerText="Успех!";
+                save(); updateUI();
+            }
+        }
+
+        window.toggleTheme = function() {
+            currentTheme = currentTheme === 'premium' ? 'classic' : 'premium';
+            applyTheme(); save();
+        }
+
+        window.resetProgress = function() {
+            if(confirm("Сброс?")) {
+                score = 0; clickPower = 1; promoState = {twizzik:false, koronka:false, vitya:false};
+                save(); location.reload();
+            }
+        }
+
+        window.toggleVibration = function() {
+            isVibration = document.getElementById('vibrationToggle').checked;
+            save();
+        }
+
+        window.tab = function(t, el) {
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            document.getElementById('tab-'+t).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            el.classList.add('active');
+            if(t === 'leaders') loadLeaders();
+        }
+
+        function applyTheme() {
+            document.body.setAttribute('data-theme', currentTheme);
+            document.getElementById('theme-name').innerText = currentTheme === 'premium' ? 'Premium' : 'Classic';
+        }
+
+        function enableGodMode() { document.getElementById('brand-label').innerText = "GOD MODE"; document.getElementById('brand-label').style.color = "gold"; }
+
+        function format(n) {
+            if(n >= 1e24) return (n/1e24).toFixed(2) + 'Sp';
+            if(n >= 1e21) return (n/1e21).toFixed(2) + 'Sx'; 
+            if(n >= 1e18) return (n/1e18).toFixed(2) + 'Qi'; 
+            if(n >= 1e15) return (n/1e15).toFixed(2) + 'Q';
+            if(n >= 1e12) return (n/1e12).toFixed(2) + 'T';
+            if(n >= 1e9) return (n/1e9).toFixed(2) + 'B';
+            if(n >= 1e6) return (n/1e6).toFixed(2) + 'M';
+            if(n >= 1e3) return (n/1e3).toFixed(1) + 'K';
+            return Math.floor(n).toLocaleString();
+        }
+
+        function updateUI() {
+            document.getElementById('score').innerText = format(score);
+            document.getElementById('power').innerText = format(clickPower);
+        }
+
+        function loadLeaders() {
             if(!db) { document.getElementById('leaders-list').innerHTML = "Оффлайн"; return; }
             db.ref('players').orderByChild('score').limitToLast(50).on('value', snap => {
                 let html = '';
@@ -272,14 +291,34 @@
                 snap.forEach(c => arr.push(c.val()));
                 arr.reverse();
                 arr.forEach((p, i) => {
-                    let style = p.name === userName ? "border:1px solid var(--accent)" : "";
-                    html += `<div class="card" style="${style}"><div class="rank-badge">#${i+1}</div><div>${p.name}</div><div>${format(p.score)}</div></div>`;
+                    let style = p.name === userName ? "border:1px solid orange" : "";
+                    html += `<div class="card" style="${style}"><div><b>#${i+1}</b> ${p.name}</div><div>${format(p.score)}</div></div>`;
                 });
                 document.getElementById('leaders-list').innerHTML = html;
             });
         }
 
-        // УЛУЧШЕНИЯ (60 ШТУК)
+        // --- ИНИЦИАЛИЗАЦИЯ ---
+        
+        // 1. Загружаем сохранение
+        try {
+            const local = localStorage.getItem('mandarin_save_v2');
+            if(local) {
+                const d = JSON.parse(local);
+                score = d.score || 0;
+                clickPower = d.power || 1;
+                promoState = d.promos || promoState;
+                currentTheme = d.theme || 'premium';
+                isVibration = d.vib !== false;
+            }
+        } catch(e) {}
+
+        applyTheme();
+        if(promoState.twizzik) enableGodMode();
+        document.getElementById('vibrationToggle').checked = isVibration;
+        updateUI();
+
+        // 2. Создаем магазин
         const upgrades = [
             { name: "Палец", p: 1, c: 100 }, { name: "Кастет", p: 5, c: 500 },
             { name: "Мышка", p: 15, c: 1500 }, { name: "Клава", p: 40, c: 3500 },
@@ -313,14 +352,6 @@
             { name: "Создатель", p: 200000000000000000000000000, c: 2500000000000000000000000000000 }, { name: "Сила Twizzik", p: 999999999999999999999999999, c: 9999999999999999999999999999999 }
         ];
 
-        window.buy = function(p, c) {
-            if(score >= c) {
-                score -= c; clickPower += p;
-                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e){}
-                save(); updateUI();
-            }
-        }
-
         window.renderShop = function() {
             let html = '';
             upgrades.forEach(u => {
@@ -329,50 +360,21 @@
             document.getElementById('shop-container').innerHTML = html;
         }
 
-        // ОСТАЛЬНЫЕ ФУНКЦИИ
-        window.activatePromo = function() {
-            const code = document.getElementById('promoInput').value.toLowerCase().trim();
-            const msg = document.getElementById('promo-msg');
-            let r = 0, s = false;
-
-            if(code === 'twizzik' && !promoState.twizzik) { r=5000000000; promoState.twizzik=true; enableGodMode(); s=true; }
-            else if(code === 'koronka' && !promoState.koronka) { r=100000; promoState.koronka=true; s=true; }
-            else if(code === 'vitya' && !promoState.vitya) { r=364; promoState.vitya=true; s=true; }
-            else { msg.innerText="Ошибка"; msg.style.color="red"; return; }
-
-            score += r;
-            msg.innerText="Успех!"; msg.style.color="#2ecc71";
-            save(); updateUI();
+        // 3. Подгрузка из облака (фоном)
+        if(db) {
+            db.ref('players/' + userId).once('value').then(snap => {
+                const d = snap.val();
+                if(d && (d.score || 0) > score) {
+                    score = parseFloat(d.score);
+                    clickPower = parseFloat(d.power);
+                    promoState = d.promoState || promoState;
+                    if(promoState.twizzik) enableGodMode();
+                    updateUI();
+                }
+            });
         }
 
-        window.toggleTheme = function() {
-            currentTheme = currentTheme === 'premium' ? 'classic' : 'premium';
-            applyTheme(); save();
-        }
-
-        window.applyTheme = function() {
-            document.body.setAttribute('data-theme', currentTheme);
-            document.getElementById('theme-name').innerText = currentTheme === 'premium' ? 'Premium' : 'Classic';
-        }
-
-        window.resetProgress = function() {
-            if(confirm("Сброс?")) {
-                score=0; clickPower=1; promoState={twizzik:false, koronka:false, vitya:false};
-                save(); location.reload();
-            }
-        }
-
-        window.toggleVibration = function() {
-            isVibrationEnabled = document.getElementById('vibrationToggle').checked;
-            save();
-        }
-
-        window.tab = function(t, el) {
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            document.getElementById('tab-'+t).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            el.classList.add('active');
-            if(t === 'leaders') loadLeaders();
-        }
-
-        function enableGodMode() { document.getElementById('brand-label').innerText = "GOD MODE"; document.getElementById('
+        renderShop();
+    </script>
+</body>
+</html>
