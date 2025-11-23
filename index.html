@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mandarin Online</title>
+    <title>Mandarin Online Final</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -39,9 +39,13 @@
         .nav-item { display: flex; flex-direction: column; align-items: center; color: #888; font-size: 9px; transition: 0.2s; }
         .nav-item.active { color: var(--accent); transform: scale(1.1); }
         .nav-icon { font-size: 20px; margin-bottom: 2px; }
+        
+        #loading-screen { position: fixed; top:0; left:0; width:100%; height:100%; background: var(--bg-color); z-index: 9999; display: flex; justify-content: center; align-items: center; color: var(--accent); font-weight: bold; font-size: 20px; }
     </style>
 </head>
 <body>
+
+    <div id="loading-screen">Загрузка...</div>
 
     <div class="header">
         <div style="font-size: 12px; opacity: 0.5;">БАЛАНС</div>
@@ -55,13 +59,12 @@
     </div>
 
     <div id="tab-shop" class="content">
-        <h2>Магазин (50 ур.)</h2>
+        <h2>Магазин</h2>
         <div id="shop-container"></div>
     </div>
 
     <div id="tab-leaders" class="content">
         <h2>🏆 Топ Игроков</h2>
-        <div style="font-size:11px; opacity:0.5; margin-bottom:10px;">Обновляется в реальном времени</div>
         <div id="leaders-list">Загрузка...</div>
     </div>
 
@@ -89,7 +92,7 @@
     </div>
 
     <script>
-        // ✅ ТВОИ КЛЮЧИ ВСТАВЛЕНЫ:
+        // ✅ ВСТАВИЛ ТВОИ КЛЮЧИ:
         const firebaseConfig = {
             apiKey: "AIzaSyA8FA1_MeqVmGPzL4VzOGDxgdZd9U6Wuio",
             authDomain: "mandarin-game-edee2.firebaseapp.com",
@@ -113,13 +116,13 @@
         
         let userId = "guest_" + Math.floor(Math.random() * 100000);
         let userName = "Guest";
+        
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             userId = tg.initDataUnsafe.user.id.toString();
             userName = tg.initDataUnsafe.user.first_name;
         }
 
         const upgrades = [
-            // Начало
             { name: "Палец", power: 1, cost: 100 },
             { name: "Кастет", power: 5, cost: 500 },
             { name: "Мышка", power: 15, cost: 1500 },
@@ -128,67 +131,77 @@
             { name: "Друг", power: 150, cost: 10000 },
             { name: "Семья", power: 300, cost: 25000 },
             { name: "Офис", power: 600, cost: 50000 },
-            // Любитель
             { name: "Скрипт", power: 1200, cost: 120000 },
             { name: "Хакер", power: 2500, cost: 300000 },
             { name: "Видеокарта", power: 5000, cost: 700000 },
             { name: "Процессор", power: 10000, cost: 1500000 },
             { name: "Сервер", power: 25000, cost: 4000000 },
             { name: "Ботнет", power: 60000, cost: 10000000 },
-            // Профессионал
             { name: "Майнинг", power: 150000, cost: 25000000 },
             { name: "Крипта", power: 350000, cost: 60000000 },
             { name: "Нейросеть", power: 800000, cost: 150000000 },
             { name: "Дата-центр", power: 2000000, cost: 400000000 },
             { name: "ИИ", power: 5000000, cost: 1000000000 },
             { name: "Стартап", power: 12000000, cost: 3000000000 },
-            // Магнат
             { name: "Корпорация", power: 30000000, cost: 8000000000 },
             { name: "Спутник", power: 75000000, cost: 20000000000 },
             { name: "Ракета", power: 200000000, cost: 60000000000 },
             { name: "SpaceX", power: 500000000, cost: 150000000000 },
             { name: "Луна", power: 1200000000, cost: 400000000000 },
-            // Космос
-            { name: "Марс", power: 3000000000, cost: 1000000000000 }, // 1T
+            { name: "Марс", power: 3000000000, cost: 1000000000000 }, 
             { name: "Колония", power: 8000000000, cost: 3000000000000 },
             { name: "Планета", power: 20000000000, cost: 8000000000000 },
             { name: "Звезда", power: 50000000000, cost: 25000000000000 },
             { name: "Солнце", power: 120000000000, cost: 70000000000000 },
-            // Галактика
             { name: "Черная Дыра", power: 300000000000, cost: 200000000000000 },
             { name: "Сверхновая", power: 800000000000, cost: 600000000000000 },
-            { name: "Туманность", power: 2000000000000, cost: 2000000000000000 }, // 2Q
+            { name: "Туманность", power: 2000000000000, cost: 2000000000000000 }, 
             { name: "Галактика", power: 5000000000000, cost: 6000000000000000 },
             { name: "Млечный Путь", power: 12000000000000, cost: 20000000000000000 },
-            // Вселенная
             { name: "Квазар", power: 30000000000000, cost: 80000000000000000 },
             { name: "Вселенная", power: 80000000000000, cost: 250000000000000000 },
             { name: "Мультивселенная", power: 200000000000000, cost: 750000000000000000 },
-            { name: "Параллель", power: 500000000000000, cost: 2500000000000000000 }, // 2.5Qi
+            { name: "Параллель", power: 500000000000000, cost: 2500000000000000000 }, 
             { name: "Измерение X", power: 1200000000000000, cost: 8000000000000000000 },
-            // Божественный уровень
             { name: "Квант. Поле", power: 3000000000000000, cost: 25000000000000000000 },
             { name: "Время", power: 8000000000000000, cost: 80000000000000000000 },
             { name: "Материя", power: 20000000000000000, cost: 250000000000000000000 },
             { name: "Антиматерия", power: 50000000000000000, cost: 800000000000000000000 },
-            { name: "Пустота", power: 120000000000000000, cost: 3000000000000000000000 }, // 3Sx
+            { name: "Пустота", power: 120000000000000000, cost: 3000000000000000000000 }, 
             { name: "Матрица", power: 300000000000000000, cost: 10000000000000000000000 },
             { name: "Перчатка Таноса", power: 800000000000000000, cost: 35000000000000000000000 },
             { name: "Реальность", power: 2000000000000000000, cost: 100000000000000000000000 },
             { name: "Создатель", power: 5000000000000000000, cost: 400000000000000000000000 },
-            { name: "Сила Twizzik", power: 9999999999999999999, cost: 999999999999999999999999 } // MAX
+            { name: "Сила Twizzik", power: 9999999999999999999, cost: 999999999999999999999999 }
         ];
 
-        function loadGame() {
-            if(localStorage.getItem('score')) {
-                score = parseFloat(localStorage.getItem('score')); 
-                clickPower = parseFloat(localStorage.getItem('power'));
-                promoTwizzikUsed = localStorage.getItem('promo_twizzik_used') === 'true';
-                promoKoronkaUsed = localStorage.getItem('promo_koronka_used') === 'true';
-            }
+        function initGame() {
+            db.ref('players/' + userId).once('value').then((snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    score = parseFloat(data.score) || 0;
+                    clickPower = parseFloat(data.power) || 1;
+                    if(data.promoTwizzik) promoTwizzikUsed = data.promoTwizzik;
+                    if(data.promoKoronka) promoKoronkaUsed = data.promoKoronka;
+                } else {
+                    if(localStorage.getItem('score')) {
+                        score = parseFloat(localStorage.getItem('score'));
+                        clickPower = parseFloat(localStorage.getItem('power'));
+                        promoTwizzikUsed = localStorage.getItem('promo_twizzik_used') === 'true';
+                        promoKoronkaUsed = localStorage.getItem('promo_koronka_used') === 'true';
+                    }
+                }
+                document.getElementById('loading-screen').style.display = 'none';
+                updateUI();
+            }).catch((error) => {
+                document.getElementById('loading-screen').style.display = 'none';
+                if(localStorage.getItem('score')) {
+                    score = parseFloat(localStorage.getItem('score'));
+                    clickPower = parseFloat(localStorage.getItem('power'));
+                }
+                updateUI();
+            });
             if(localStorage.getItem('vibration')) isVibrationEnabled = localStorage.getItem('vibration') === 'true';
-            updateUI();
-            saveToCloud();
         }
 
         function saveGame() {
@@ -201,7 +214,13 @@
 
         function saveToCloud() {
             saveGame();
-            db.ref('players/' + userId).set({ name: userName, score: score });
+            db.ref('players/' + userId).update({ 
+                name: userName, 
+                score: score,
+                power: clickPower,
+                promoTwizzik: promoTwizzikUsed,
+                promoKoronka: promoKoronkaUsed
+            });
         }
 
         function doClick() {
@@ -248,6 +267,8 @@
         function resetProgress() {
             if(confirm("Удалить всё?")) {
                 score = 0; clickPower = 1;
+                promoTwizzikUsed = false;
+                promoKoronkaUsed = false;
                 saveToCloud(); updateUI();
             }
         }
@@ -312,7 +333,7 @@
             });
         });
 
-        loadGame();
+        initGame();
     </script>
 </body>
-</html>
+    </html>
