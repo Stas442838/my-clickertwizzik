@@ -3,180 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Casino Pro</title>
+    <title>Cyber Slots Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --main-color: #ff4b1f;
-            --bg-color: #1a1a1a;
-            --card-bg: #2d2d2d;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-gold: #ffd700;
+            --bg-dark: #0a0a12;
+            --reel-bg: #1a1a2e;
         }
         
+        * {box-sizing: border-box;}
+
         body {
-            background-color: var(--bg-color);
+            background: radial-gradient(circle at center top, #2b1055, #000);
             color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Orbitron', sans-serif; /* Футуристичный шрифт */
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
             overflow: hidden;
             user-select: none;
+            padding: 20px;
         }
 
-        /* Кнопка настроек (шестеренка) */
+        /* --- UI Элементы --- */
         .settings-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 24px;
-            cursor: pointer;
-            background: none;
-            border: none;
-            color: #777;
-            transition: color 0.3s;
+            position: absolute; top: 20px; right: 20px;
+            font-size: 28px; cursor: pointer; background: none; border: none;
+            color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue);
+            transition: transform 0.3s; z-index: 10;
         }
-        .settings-btn:hover { color: white; }
+        .settings-btn:hover { transform: rotate(90deg); }
 
         .balance-container {
-            background: var(--card-bg);
-            padding: 15px 30px;
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            border-radius: 30px;
             margin-bottom: 40px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            font-size: 24px;
-            border: 1px solid #444;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px var(--neon-blue), inset 0 0 20px rgba(0, 243, 255, 0.2);
+            font-size: 28px; font-weight: 900; letter-spacing: 1px;
+        }
+
+        /* --- СЛОТЫ И АНИМАЦИИ --- */
+        .slots-machine {
+            background: #111;
+            padding: 20px;
+            border-radius: 25px;
+            border: 3px solid var(--neon-pink);
+            box-shadow: 0 0 30px var(--neon-pink), inset 0 0 30px #000;
+            margin-bottom: 40px;
         }
 
         .slots {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 40px;
-            perspective: 1000px;
+            display: flex; gap: 15px; perspective: 1000px;
         }
 
-        .reel {
-            width: 85px;
-            height: 110px;
-            background: linear-gradient(to bottom, #eee, #fff, #eee);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 45px;
-            color: #333;
-            border: 4px solid #ffd700;
-            box-shadow: inset 0 0 15px rgba(0,0,0,0.3), 0 10px 20px rgba(0,0,0,0.5);
-            transition: transform 0.2s;
+        .reel-container {
+            width: 90px; height: 120px;
+            overflow: hidden; /* Скрываем все что выходит за рамки */
+            background: linear-gradient(to bottom, #000, var(--reel-bg) 50%, #000);
+            border-radius: 15px;
+            border: 2px solid #333;
+            box-shadow: inset 0 0 20px #000;
+            position: relative;
         }
+        
+        /* Сама лента с символами */
+        .reel-strip {
+            display: flex; flex-direction: column; align-items: center;
+            position: absolute; top: 0; left: 0; width: 100%;
+            transition: transform 0.1s ease-out; /* Плавность движения */
+        }
+
+        .symbol {
+            height: 120px; /* Высота одного символа равна высоте контейнера */
+            display: flex; align-items: center; justify-content: center;
+            font-size: 60px;
+            text-shadow: 0 0 15px rgba(255,255,255,0.5);
+            filter: blur(0px); /* Изначально без размытия */
+            transition: filter 0.1s;
+        }
+
+        /* Класс для анимации вращения (размытие) */
+        .spinning .symbol {
+            filter: blur(8px) translateY(-5px);
+            opacity: 0.8;
+        }
+        
+        /* Класс для анимации выигрыша */
+        .win-pulse {
+            animation: pulseGold 1s infinite alternate;
+        }
+        
+        @keyframes pulseGold {
+            from { box-shadow: 0 0 10px var(--neon-gold); border-color: var(--neon-gold); }
+            to { box-shadow: 0 0 40px var(--neon-gold); border-color: #fff; transform: scale(1.05); }
+        }
+
+        /* --- КНОПКА SPIN --- */
+        .spin-container {
+            position: relative;
+            width: 120px; height: 120px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .spin-ring {
+            position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border-radius: 50%; border: 4px solid var(--neon-pink);
+            box-shadow: 0 0 20px var(--neon-pink);
+            animation: spinRing 3s linear infinite;
+        }
+        @keyframes spinRing { 100% { transform: rotate(360deg); } }
 
         button.spin-btn {
-            background: linear-gradient(45deg, #ff4b1f, #ff9068);
-            border: none;
-            padding: 18px 50px;
-            color: white;
-            font-size: 22px;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: 800;
-            box-shadow: 0 5px 25px rgba(255, 75, 31, 0.5);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            width: 100px; height: 100px;
+            border-radius: 50%; border: none;
+            background: linear-gradient(145deg, #ff00ff, #7a00ff);
+            color: white; font-size: 20px; font-weight: 900;
+            cursor: pointer; z-index: 2;
+            box-shadow: 0 10px 25px rgba(255, 0, 255, 0.6), inset 0 -5px 15px rgba(0,0,0,0.3);
+            transition: all 0.1s; font-family: 'Orbitron', sans-serif;
         }
-
-        button.spin-btn:active { transform: scale(0.95); }
-        button:disabled { background: #444; box-shadow: none; cursor: not-allowed; }
+        button.spin-btn:active { transform: scale(0.95); background: linear-gradient(145deg, #7a00ff, #ff00ff); }
+        button.spin-btn:disabled { background: #333; box-shadow: none; color: #777; animation: none;}
 
         #message {
-            margin-top: 25px;
-            height: 25px;
-            color: #ffd700;
-            font-weight: bold;
-            font-size: 18px;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            margin-top: 25px; min-height: 30px;
+            color: var(--neon-gold); font-weight: bold; font-size: 20px;
+            text-shadow: 0 0 15px var(--neon-gold); text-align: center;
         }
 
-        /* Модальное окно настроек */
+        /* --- МОДАЛЬНОЕ ОКНО НАСТРОЕК --- */
         .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(5px);
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 100;
+            align-items: center; justify-content: center; backdrop-filter: blur(10px);
         }
-
         .modal-content {
-            background: #333;
-            padding: 30px;
-            border-radius: 20px;
-            width: 80%;
-            max-width: 300px;
-            text-align: left;
-            border: 1px solid #555;
+            background: #1a1a2e; padding: 30px; border-radius: 25px; width: 85%; max-width: 350px;
+            border: 2px solid var(--neon-blue); box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
         }
-
-        .modal h2 { margin-top: 0; text-align: center; color: #ffd700; }
-
-        .setting-item {
-            margin: 20px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Свитч (переключатель) */
-        .switch {
-            position: relative; display: inline-block; width: 50px; height: 24px;
-        }
+        .modal h2 { text-align: center; color: var(--neon-blue); margin-top: 0; text-transform: uppercase;}
+        .setting-item { margin: 25px 0; display: flex; justify-content: space-between; align-items: center; font-size: 18px;}
+        /* Свитч */
+        .switch { position: relative; display: inline-block; width: 60px; height: 30px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute; cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #555; transition: .4s; border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute; content: "";
-            height: 16px; width: 16px; left: 4px; bottom: 4px;
-            background-color: white; transition: .4s; border-radius: 50%;
-        }
-        input:checked + .slider { background-color: #ff4b1f; }
-        input:checked + .slider:before { transform: translateX(26px); }
-
-        /* Поле ввода промокода */
-        .promo-input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #555;
-            background: #222;
-            color: white;
-            margin-top: 5px;
-            box-sizing: border-box;
-        }
-        .apply-btn {
-            width: 100%;
-            margin-top: 10px;
-            padding: 10px;
-            background: #444;
-            border: none;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .close-modal {
-            margin-top: 20px;
-            width: 100%;
-            padding: 10px;
-            background: transparent;
-            border: 1px solid #777;
-            color: #bbb;
-            border-radius: 8px;
-        }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #333; transition: .4s; border-radius: 34px; border: 2px solid #555;}
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 0 10px white;}
+        input:checked + .slider { background-color: var(--neon-pink); border-color: var(--neon-pink);}
+        input:checked + .slider:before { transform: translateX(28px); background-color: var(--neon-blue);}
+        /* Инпуты */
+        .promo-input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid var(--neon-blue); background: #0a0a12; color: white; margin-top: 10px; font-family: 'Orbitron', sans-serif; outline: none;}
+        .apply-btn, .close-modal { width: 100%; margin-top: 15px; padding: 12px; border: none; border-radius: 10px; cursor: pointer; font-family: 'Orbitron', sans-serif; font-weight: bold; font-size: 16px; transition: 0.2s;}
+        .apply-btn { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue);}
+        .apply-btn:hover { background: white; }
+        .close-modal { background: transparent; border: 2px solid var(--neon-pink); color: var(--neon-pink);}
+        .close-modal:hover { background: var(--neon-pink); color: white; box-shadow: 0 0 15px var(--neon-pink);}
     </style>
 </head>
 <body>
@@ -185,31 +175,21 @@
 
     <div id="settingsModal" class="modal">
         <div class="modal-content">
-            <h2>Настройки</h2>
-            
+            <h2>Система</h2>
             <div class="setting-item">
                 <span>📳 Вибрация</span>
-                <label class="switch">
-                    <input type="checkbox" id="vibrateToggle" checked onchange="saveSettings()">
-                    <span class="slider"></span>
-                </label>
+                <label class="switch"><input type="checkbox" id="vibrateToggle" checked onchange="saveSettings()"><span class="slider"></span></label>
             </div>
-
             <div class="setting-item">
                 <span>🚀 Турбо режим</span>
-                <label class="switch">
-                    <input type="checkbox" id="turboToggle" onchange="saveSettings()">
-                    <span class="slider"></span>
-                </label>
+                <label class="switch"><input type="checkbox" id="turboToggle" onchange="saveSettings()"><span class="slider"></span></label>
             </div>
-
-            <div style="margin-top: 20px;">
-                <label>🎁 Промокод:</label>
-                <input type="text" id="promoInput" class="promo-input" placeholder="Введи код...">
-                <button class="apply-btn" onclick="checkPromo()">Активировать</button>
+            <div style="margin-top: 30px;">
+                <label>🎁 Ввести код:</label>
+                <input type="text" id="promoInput" class="promo-input" placeholder="Код доступа...">
+                <button class="apply-btn" onclick="checkPromo()">АКТИВИРОВАТЬ</button>
             </div>
-
-            <button class="close-modal" onclick="closeSettings()">Закрыть</button>
+            <button class="close-modal" onclick="closeSettings()">ЗАКРЫТЬ</button>
         </div>
     </div>
 
@@ -217,116 +197,196 @@
         <span id="balance">1000</span> $
     </div>
 
-    <div class="slots">
-        <div class="reel" id="r1">7️⃣</div>
-        <div class="reel" id="r2">7️⃣</div>
-        <div class="reel" id="r3">7️⃣</div>
+    <div class="slots-machine">
+        <div class="slots">
+            <div class="reel-container" id="rc1">
+                <div class="reel-strip" id="r1"><div class="symbol">7️⃣</div></div>
+            </div>
+            <div class="reel-container" id="rc2">
+                <div class="reel-strip" id="r2"><div class="symbol">7️⃣</div></div>
+            </div>
+            <div class="reel-container" id="rc3">
+                <div class="reel-strip" id="r3"><div class="symbol">7️⃣</div></div>
+            </div>
+        </div>
     </div>
 
-    <button id="spinBtn" class="spin-btn" onclick="spin()">КРУТИТЬ (50$)</button>
-    <div id="message">Удачи!</div>
+    <div class="spin-container">
+        <div class="spin-ring"></div>
+        <button id="spinBtn" class="spin-btn" onclick="startSpin()">SPIN<br><small>50$</small></button>
+    </div>
+    
+    <div id="message">Готов к игре!</div>
 
     <script>
         let tg = window.Telegram.WebApp;
         tg.expand();
+        tg.setHeaderColor('#2b1055'); // Цвет шапки телеграм
 
-        // Данные игры
-        const symbols = ['🍒', '🍋', '🍇', '💎', '7️⃣', '🔔'];
-        const cost = 50;
+        // Расширенный набор символов для анимации
+        const symbolsMap = ['🍒', '🍋', '🍇', '💎', '7️⃣', '🔔', '🍊', '⭐'];
+        // Чтобы лента была длинной, дублируем символы
+        const fullReelStrip = [...symbolsMap, ...symbolsMap, ...symbolsMap];
         
-        // Загружаем данные из памяти телефона
-        let balance = parseInt(localStorage.getItem('casino_balance')) || 1000;
-        let isVibration = localStorage.getItem('setting_vibration') !== 'false'; // По дефолту true
+        const cost = 50;
+        let balance = parseInt(localStorage.getItem('casino_balance_v2')) || 1000;
+        let isVibration = localStorage.getItem('setting_vibration') !== 'false';
         let isTurbo = localStorage.getItem('setting_turbo') === 'true';
-        let usedPromos = JSON.parse(localStorage.getItem('used_promos')) || [];
+        let usedPromos = JSON.parse(localStorage.getItem('used_promos_v2')) || [];
 
         // Инициализация
-        updateBalance();
+        updateBalance(false); // False значит без анимации счета при старте
         document.getElementById('vibrateToggle').checked = isVibration;
         document.getElementById('turboToggle').checked = isTurbo;
 
-        // --- Логика игры ---
+        // --- Логика Анимации и Игры ---
 
-        function spin() {
+        async function startSpin() {
             if (balance < cost) {
-                showMessage("❌ Не хватает денег!", "red");
-                haptic('error');
-                return;
+                showMessage("❌ НЕДОСТАТОЧНО СРЕДСТВ", "var(--neon-pink)");
+                haptic('error'); return;
             }
 
             balance -= cost;
-            updateBalance();
-            showMessage("...", "white");
+            updateBalance(true); // Обновляем баланс с анимацией
+            showMessage("Удачи!", var(--neon-blue));
             
             let btn = document.getElementById('spinBtn');
             btn.disabled = true;
-            btn.style.transform = "scale(0.95)";
+            document.querySelector('.spin-ring').style.animationDuration = '0.5s'; // Ускоряем кольцо
 
-            let spins = 0;
-            // Скорость: если турбо - 50мс, иначе 100мс. Количество прокрутов тоже меняем.
-            let speed = isTurbo ? 50 : 100; 
-            let maxSpins = isTurbo ? 5 : 15;
+            // Убираем классы победы, если были
+            document.querySelectorAll('.reel-container').forEach(el => el.classList.remove('win-pulse'));
 
-            let interval = setInterval(() => {
-                document.getElementById('r1').innerText = getRandomSymbol();
-                document.getElementById('r2').innerText = getRandomSymbol();
-                document.getElementById('r3').innerText = getRandomSymbol();
+            // Запускаем вращение для каждого барабана с задержкой
+            const results = [];
+            // Базовое время вращения + задержка для каждого следующего
+            let baseSpinTime = isTurbo ? 500 : 1500;
+            let delayStep = isTurbo ? 200 : 500;
+
+            const spinPromises = [
+                spinReel('r1', baseSpinTime),
+                spinReel('r2', baseSpinTime + delayStep),
+                spinReel('r3', baseSpinTime + delayStep * 2)
+            ];
+
+            // Ждем окончания всех вращений
+            const finalSymbols = await Promise.all(spinPromises);
+            
+            btn.disabled = false;
+            document.querySelector('.spin-ring').style.animationDuration = '3s'; // Возвращаем кольцо
+            checkWin(finalSymbols);
+        }
+
+        function spinReel(reelId, duration) {
+            return new Promise(resolve => {
+                const strip = document.getElementById(reelId);
+                const container = strip.parentElement;
                 
-                if(isVibration && spins % 2 === 0) tg.HapticFeedback.selectionChanged();
-                
-                spins++;
-                if(spins > maxSpins) {
-                    clearInterval(interval);
-                    checkWin();
-                    btn.disabled = false;
-                    btn.style.transform = "scale(1)";
+                // Генерируем случайную длинную ленту символов для этого вращения
+                let currentStripContent = "";
+                // Добавляем много символов для имитации долгого вращения
+                for(let i=0; i < 20; i++) {
+                     currentStripContent += `<div class="symbol">${getRandomSymbol()}</div>`;
                 }
-            }, speed);
+                // Выбираем финальный символ
+                const finalSymbol = getRandomSymbol();
+                 // Добавляем финальный символ в конец
+                currentStripContent += `<div class="symbol" id="${reelId}-final">${finalSymbol}</div>`;
+                
+                strip.innerHTML = currentStripContent;
+                
+                // Включаем размытие
+                container.classList.add('spinning');
+                
+                // Анимация движения ленты вверх
+                // Высота символа 120px. Двигаем ленту так, чтобы последний символ оказался в видимой зоне
+                const finalPosition = - (strip.children.length - 1) * 120;
+                strip.style.transition = `transform ${duration}ms cubic-bezier(.45,.05,.55,.95)`;
+                strip.style.transform = `translateY(${finalPosition}px)`;
+
+                // По завершении анимации
+                setTimeout(() => {
+                    container.classList.remove('spinning');
+                    haptic('selection'); // Вибрация при остановке барабана
+                    
+                    // Эффект "отскока" (небольшое движение вниз-вверх)
+                    strip.style.transition = "transform 0.2s ease-out";
+                    strip.style.transform = `translateY(${finalPosition + 20}px)`;
+                    setTimeout(() => {
+                         strip.style.transform = `translateY(${finalPosition}px)`;
+                    }, 200);
+
+                    resolve(finalSymbol);
+                }, duration);
+            });
         }
 
         function getRandomSymbol() {
-            return symbols[Math.floor(Math.random() * symbols.length)];
+            return symbolsMap[Math.floor(Math.random() * symbolsMap.length)];
         }
 
-        function checkWin() {
-            let r1 = document.getElementById('r1').innerText;
-            let r2 = document.getElementById('r2').innerText;
-            let r3 = document.getElementById('r3').innerText;
-
+        function checkWin(symbols) {
+            let [r1, r2, r3] = symbols;
             let win = 0;
 
-            // Логика побед
             if (r1 === r2 && r2 === r3) {
-                if(r1 === '7️⃣') win = 5000; // Джекпот
-                else if(r1 === '💎') win = 1000;
-                else if(r1 === '🔔') win = 500;
-                else win = 200;
+                if(r1 === '7️⃣') win = 5000;
+                else if(r1 === '💎') win = 2000;
+                else if(r1 === '🔔') win = 1000;
+                else if(r1 === '⭐') win = 750;
+                else win = 250;
+                // Включаем пульсацию всех барабанов
+                document.querySelectorAll('.reel-container').forEach(el => el.classList.add('win-pulse'));
             } 
-            // Утешительный приз за две семерки
-            else if ((r1 === '7️⃣' && r2 === '7️⃣') || (r2 === '7️⃣' && r3 === '7️⃣')) {
+            else if ((r1 === '7️⃣' && r2 === '7️⃣') || (r2 === '7️⃣' && r3 === '7️⃣') || (r1 === '7️⃣' && r3 === '7️⃣')) {
                 win = 100;
+                // Тут можно подсветить только те, что совпали, но для простоты подсветим все
+                document.querySelectorAll('.reel-container').forEach(el => el.classList.add('win-pulse'));
             }
 
             if (win > 0) {
                 balance += win;
-                showMessage(`🎉 ВЫИГРЫШ: +${win}$`, "#00ff00");
+                showMessage(`🎉 ВЫИГРЫШ: +${win}$`, var(--neon-gold));
                 haptic('success');
+                updateBalance(true);
             } else {
-                showMessage("Пусто...", "#777");
+                showMessage("Попробуй еще раз", "#555");
             }
-            updateBalance();
+            localStorage.setItem('casino_balance_v2', balance);
         }
 
-        function updateBalance() {
-            document.getElementById('balance').innerText = balance;
-            // Сохраняем баланс при каждом изменении
-            localStorage.setItem('casino_balance', balance);
+        // Анимированное обновление баланса
+        function updateBalance(animate) {
+            const balanceEl = document.getElementById('balance');
+            if (animate) {
+                let start = parseInt(balanceEl.innerText);
+                let end = balance;
+                let duration = 1000;
+                let range = end - start;
+                let current = start;
+                let increment = end > start ? 1 : -1;
+                let stepTime = Math.abs(Math.floor(duration / range));
+                if (stepTime < 10) stepTime = 10; // Минимальная задержка
+                
+                let timer = setInterval(function() {
+                    current += increment;
+                    balanceEl.innerText = current;
+                    if (current == end) {
+                        clearInterval(timer);
+                    }
+                }, stepTime);
+                
+            } else {
+                balanceEl.innerText = balance;
+            }
         }
 
         function showMessage(text, color) {
             let msg = document.getElementById('message');
-            msg.innerText = text;
+            msg.innerHTML = text;
             msg.style.color = color;
+            msg.style.textShadow = `0 0 15px ${color}`;
         }
 
         function haptic(type) {
@@ -334,55 +394,30 @@
             tg.HapticFeedback.notificationOccurred(type);
         }
 
-        // --- Настройки и Промокоды ---
-
-        function openSettings() {
-            document.getElementById('settingsModal').style.display = 'flex';
-        }
-
-        function closeSettings() {
-            document.getElementById('settingsModal').style.display = 'none';
-        }
-
+        // --- Функции настроек и промокодов (без изменений в логике) ---
+        function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
         function saveSettings() {
             isVibration = document.getElementById('vibrateToggle').checked;
             isTurbo = document.getElementById('turboToggle').checked;
-            
             localStorage.setItem('setting_vibration', isVibration);
             localStorage.setItem('setting_turbo', isTurbo);
         }
-
         function checkPromo() {
             let input = document.getElementById('promoInput');
             let code = input.value.trim().toUpperCase();
-            
-            if(usedPromos.includes(code)) {
-                alert("Ты уже использовал этот код!");
-                return;
-            }
-
-            // Список кодов
-            if(code === "START") {
-                addPromoBonus(500, code);
-            } else if (code === "GEMINI") {
-                addPromoBonus(1000, code);
-            } else if (code === "RICH") {
-                addPromoBonus(5000, code);
-            } else {
-                alert("Неверный код 😢");
-            }
-            
+            if(usedPromos.includes(code)) { alert("Код уже использован!"); return; }
+            if(code === "START") addPromoBonus(500, code);
+            else if (code === "CYBER") addPromoBonus(1000, code);
+            else if (code === "NEON") addPromoBonus(5000, code);
+            else alert("Неверный код");
             input.value = "";
         }
-
         function addPromoBonus(amount, code) {
-            balance += amount;
-            usedPromos.push(code);
-            localStorage.setItem('used_promos', JSON.stringify(usedPromos));
-            updateBalance();
-            alert(`Промокод активирован! +${amount}$`);
-            haptic('success');
-            closeSettings();
+            balance += amount; usedPromos.push(code);
+            localStorage.setItem('used_promos_v2', JSON.stringify(usedPromos));
+            updateBalance(true);
+            alert(`Принято! +${amount}$`); haptic('success'); closeSettings();
         }
     </script>
 </body>
